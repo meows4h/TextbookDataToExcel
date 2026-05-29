@@ -1,2 +1,0 @@
-python temp.py
-pause
