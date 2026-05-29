@@ -1,6 +1,8 @@
 # Documentation File
 The goal of this file is to provide a higher level overview of how this script works to help identify issues, improvements, as well as future maintainability.
 
+As of the May / June release, this is out of date, but this still holds some helpful information for how the CSV files work. This comment will be removed once this is properly updated.
+
 ## At a Glance
 If you're trying to modify the `Creating an Excel Sheet from Scratch`, modify `main.py` and subsequent functions used there.
 If you're looking to change something in the other functions, you can find it in the `modes.py` script.
