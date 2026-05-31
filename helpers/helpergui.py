@@ -22,23 +22,15 @@ class AddedGUI:
         self.column = 0
 
     def add_label(self, message):
-        ttk.Label(
-            self.root,
-            text=message).grid(
-            column=self.column,
-            row=self.row,
-            sticky=tk.W)
+        ttk.Label(self.root, text=message).grid(
+            column=self.column, row=self.row, sticky=tk.W
+        )
         self.row += 1
 
     def add_button(self, text, cmd):
-        ttk.Button(
-            self.root,
-            text=text,
-            command=cmd
-        ).grid(
-            column=self.column,
-            row=self.row,
-            sticky=tk.W)
+        ttk.Button(self.root, text=text, command=cmd).grid(
+            column=self.column, row=self.row, sticky=tk.W
+        )
         self.row += 1
 
 

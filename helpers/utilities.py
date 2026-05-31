@@ -156,7 +156,7 @@ def get_split_course(course):
             return output
 
 
-def get_input(min=0, max=0, text=''):
+def get_input(min=0, max=0, text=""):
     """Gets an input w/ error checking. If no min or max is set, it will parse strings."""
     if not (min == 0 and max == 0):
         while True:
@@ -177,12 +177,12 @@ def get_input(min=0, max=0, text=''):
                 print("Invalid input.")
 
 
-def get_enabled(text=''):
+def get_enabled(text=""):
     """Gets an input w/ error checking, returns True or False."""
     while True:
         try:
             state = input(text)
-            if state == 'n' or state == 'y':
+            if state == "n" or state == "y":
                 break
             else:
                 raise ValueError("Incorrect input.")
@@ -261,16 +261,14 @@ def get_string_cleaners():
         "(3Rd Edition)",
         "(5 Yr Access)",
     ]
-    author_clean = ["(2)", "(3)", "(digital)",
-                    "-[Qr Code]", "[Qr Code}", "(Nio)"]
+    author_clean = ["(2)", "(3)", "(digital)", "-[Qr Code]", "[Qr Code}", "(Nio)"]
     return book_clean, author_clean
 
 
 def get_row_info(row, key):
     """Gets info within a row given a key. Checks for blank information."""
     headers, head_list = get_sheet_headers()
-    result = row[headers[f"{key}"]] if not pd.isna(
-        row[headers[f"{key}"]]) else ""
+    result = row[headers[f"{key}"]] if not pd.isna(row[headers[f"{key}"]]) else ""
     return result
 
 
