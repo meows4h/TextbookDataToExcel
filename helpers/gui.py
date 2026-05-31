@@ -2,10 +2,12 @@ import tkinter as tk
 from tkinter import ttk
 import configparser
 import threading
-from helpers.utilities import get_config_headers
+from helpers.utilities import get_config_headers, get_directory
 from helpers.sheetmaker import make_excel_sheet
 from helpers.emails import create_email_excel
 from helpers.modes import emails_update, analytics_update, enrollment_update
+from helpers.modes import emails_csv, analytics_csv
+from helpers.bookstore import pull_textbook_data, pull_info
 
 
 # the idea here is we compartmentalize the different things into different functions to build screens
@@ -270,6 +272,56 @@ class GUI:
         # make_excel_sheet(self.open_outlook, self.open_alma, self)
         self.build_main()
 
+    def build_import_csv(self, yes_cmd, no_cmd):
+        self.reset_main()
+        locals_dict = {"self": self}
+        ttk.Label(
+            self.main_tab,
+            text="Import previous information?").grid(
+            column=0,
+            row=0,
+            sticky=tk.W)
+        ttk.Button(
+            self.main_tab,
+            text="Yes",
+            command=lambda: exec(yes_cmd, {}, locals_dict)).grid(
+            column=0,
+            row=1,
+            sticky=tk.W)
+        ttk.Button(
+            self.main_tab,
+            text="No",
+            command=lambda: exec(no_cmd, {}, locals_dict)).grid(
+            column=0,
+            row=2,
+            sticky=tk.W)
+        ttk.Button(
+            self.main_tab,
+            text="Go Back",
+            command=lambda: self.start_mode(flag=2)).grid(
+            column=0,
+            row=5,
+            sticky=tk.W)
+
+    def start_analytics_csv(self, import_csv):
+        bookstore_cfg = self.cfg["Textbook"]
+        textbk_path = get_directory("Save", bookstore_cfg)
+        analytics_thread = threading.Thread(target=lambda: analytics_csv(self.cfg, textbk_path, import_csv))
+        analytics_thread.start()
+        self.build_main()
+
+    def start_bookstore_site(self):
+        bookstore_thread = threading.Thread(target=pull_textbook_data)
+        bookstore_thread.start()
+        self.build_main()
+
+    def start_bookstore_pull(self):
+        bookstore_cfg = self.cfg["Textbook"]
+        textbk_path = get_directory("Save", bookstore_cfg)
+        bookstore_thread = threading.Thread(target=lambda: pull_info(textbk_path))
+        bookstore_thread.start()
+        self.build_main()
+
     # function that handles options from the home screen
     def start_mode(self, *args, **kwargs):
         self.reset_main()
@@ -298,9 +350,14 @@ class GUI:
                 column=0,
                 row=2,
                 sticky=tk.W)
+            # this button is where i leftoff
+            # still needs to have all the info overhauled into AddedGUI format instead of the
+            # CLI print, but! this is functional now more than anything
+            # base the other buttons off of this
             ttk.Button(
                 self.main_tab,
-                text="Analytics Data").grid(
+                text="Analytics Data",
+                command=lambda: self.build_import_csv("self.start_analytics_csv(True)", "self.start_analytics_csv(False)")).grid(
                 column=0,
                 row=3,
                 sticky=tk.W)

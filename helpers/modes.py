@@ -124,11 +124,15 @@ def emails_csv(full_config, textbk_path):
     email_exporter(emails_path, emails)
 
 
-def analytics_csv(full_config, textbk_path):
+def analytics_csv(full_config, textbk_path, pre_import=None):
     """Updates the analytics csv file with current data from Alma analytics."""
     analytics_cfg = full_config["Alma"]
     analytics_path = get_directory("Save", analytics_cfg)
-    import_data = get_import()
+
+    if pre_import == None:
+        import_data = get_import()
+    else:
+        import_data = pre_import
 
     if import_data:
         try:
