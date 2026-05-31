@@ -178,57 +178,6 @@ def setup_grabber(gui):
     return driver
 
 
-def start_browser():
-    print("test")
-    # maybe port some of the selenium setup code into this code
-    # block, then run it out of the threads?
-    # if the threads are able to report back values, it can send
-    # values into the other GUI thread block which will help with
-    # the start stopping of everything?
-    # examples:
-
-    def task(name):
-        print(f"Task {name} starting...")
-        time.sleep(2)  # Simulates an I/O wait
-        print(f"Task {name} finished!")
-
-    # 1. Create threads
-    t1 = threading.Thread(target=task, args=("A",))
-    t2 = threading.Thread(target=task, args=("B",))
-
-    # 2. Start execution
-    t1.start()
-    t2.start()
-
-    # 3. Wait for threads to finish before continuing the main program
-    t1.join()
-    t2.join()
-
-    print("All tasks done.")
-
-    def run_selenium():
-        # This function runs in a separate thread to keep the GUI responsive
-        driver = webdriver.Chrome()
-        driver.get("https://www.google.com")
-        # Add your automation steps here
-        print("Page Title:", driver.title)
-        # driver.quit()
-
-    def start_thread():
-        # Start Selenium in a new thread
-        thread = threading.Thread(target=run_selenium)
-        thread.start()
-
-    root = tk.Tk()
-    root.title("Automation Tool")
-    root.geometry("300x150")
-
-    btn = tk.Button(root, text="Start Browser", command=start_thread)
-    btn.pack(pady=20)
-
-    root.mainloop()
-
-
 def email_importer(path):
     """Imports the email csv data given a directory path."""
     email_dict = {}

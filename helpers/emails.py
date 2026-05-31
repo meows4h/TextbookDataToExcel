@@ -72,8 +72,7 @@ def write_to_excel(directory, export_data, sheetname):
     column_settings = []
     for header in dataframe.columns:
         column_settings.append({"header": header})
-    worksheet.add_table(0, 0, max_row, max_col - 1,
-                        {"columns": column_settings})
+    worksheet.add_table(0, 0, max_row, max_col - 1, {"columns": column_settings})
     worksheet.set_column(0, max_col - 1, 12)
     writer.close()
 
@@ -99,7 +98,8 @@ def create_email_excel(input_sheet=None, file_name=""):
     # changed to accommodate function call from GUI
     if input_sheet is None:
         process_sheet = get_input(
-            text="Input which sheet is being pulled from (i.e. Spring26): ")
+            text="Input which sheet is being pulled from (i.e. Spring26): "
+        )
     else:
         process_sheet = input_sheet
 
@@ -136,15 +136,21 @@ def create_email_excel(input_sheet=None, file_name=""):
     for idx, row in data.iterrows():
 
         # this checks if it has already been emailed
-        date_emailed = row[header_dict["EmailDate"]] if not pd.isna(
-            row[header_dict["EmailDate"]]) else ""
+        date_emailed = (
+            row[header_dict["EmailDate"]]
+            if not pd.isna(row[header_dict["EmailDate"]])
+            else ""
+        )
         if date_emailed != "":
             continue
 
         # this checks if it is even able to be emailed (as in has all the
         # proper data & in reading list)
-        formats_list = row[header_dict["ReadingList"]] if not pd.isna(
-            row[header_dict["ReadingList"]]) else ""
+        formats_list = (
+            row[header_dict["ReadingList"]]
+            if not pd.isna(row[header_dict["ReadingList"]])
+            else ""
+        )
         if formats_list is False or formats_list == "False":
             continue
 
@@ -173,25 +179,23 @@ def create_email_excel(input_sheet=None, file_name=""):
             access["Ebook"] = {
                 "Number": get_row_info(row, "EbookUsers"),
                 "Link": get_row_info(row, "EbookLink"),
-                "CDL": get_row_info(row, "IsCDL")
+                "CDL": get_row_info(row, "IsCDL"),
             }
 
         if print1_mms != "":
             access["Print1"] = {
                 "Number": get_row_info(row, "PrintCopies1"),
-                "Link": get_row_info(row, "PrintLink1")
+                "Link": get_row_info(row, "PrintLink1"),
             }
 
         if print2_mms != "":
             access["Print2"] = {
                 "Number": get_row_info(row, "PrintCopies2"),
-                "Link": get_row_info(row, "PrintLink2")
+                "Link": get_row_info(row, "PrintLink2"),
             }
 
         if audio_mms != "":
-            access["Audio"] = {
-                "Link": get_row_info(row, "AudioLink")
-            }
+            access["Audio"] = {"Link": get_row_info(row, "AudioLink")}
 
         # parse data into book class
         book = Book(title, author, edition, year, access)
@@ -231,11 +235,8 @@ def create_email_excel(input_sheet=None, file_name=""):
                 if inst_found:
                     continue
                 new_inst = Instructor(
-                    section_inst,
-                    section_email,
-                    course_name,
-                    section_name,
-                    book)
+                    section_inst, section_email, course_name, section_name, book
+                )
                 instructors_list.append(new_inst)
 
     # this is the final data output that will be parsed into the Excel sheet
@@ -282,12 +283,11 @@ def create_email_excel(input_sheet=None, file_name=""):
                 for book in instructor.data[course_code][section]:
                     book_str = ""
                     book_str += f"<li><em>{book.title}</em>, {book.author}"
+                    book_str += f", {
+                            book.edition} Edition" if not (book.edition == "") else ""
                     book_str += (
-                        f", {
-                            book.edition} Edition" if not (
-                            book.edition == "") else "")
-                    book_str += f", {book.year}</li>" if not (
-                        book.year == "") else "</li>"
+                        f", {book.year}</li>" if not (book.year == "") else "</li>"
+                    )
 
                     book_str += "<ul>"
 
@@ -311,10 +311,9 @@ def create_email_excel(input_sheet=None, file_name=""):
                             if user_num == "unlimited":
                                 book_str += f'<li><a href="{link}">{type_str}</a>: unlimited simultaneous users</li>'
                             else:
-                                if not pd.isna(
-                                        user_num) and user_num is not None:
+                                if not pd.isna(user_num) and user_num is not None:
                                     user_int = get_int(user_num)
-                                    user_str = 'users' if user_int != 1 else 'user'
+                                    user_str = "users" if user_int != 1 else "user"
                                 else:
                                     user_num = "Unknown"
                                     user_str = "users"
@@ -322,9 +321,8 @@ def create_email_excel(input_sheet=None, file_name=""):
 
                         elif access_data == "Print1" or access_data == "Print2":
                             physical_appear = True
-                            copy_int = get_int(
-                                book.access[access_data]["Number"])
-                            copy_str = 'copies' if copy_int != 1 else 'copy'
+                            copy_int = get_int(book.access[access_data]["Number"])
+                            copy_str = "copies" if copy_int != 1 else "copy"
                             if access_data == "Print1":
                                 type_str = "Print"
                             else:
@@ -381,20 +379,20 @@ def create_email_excel(input_sheet=None, file_name=""):
         if scanned_appear:
             email_str += '<br>Scanned books are first come, first serve, for one hour at a time and use a waitlist. There is no limit to the number of renewals if no one is in the waitlist. If you would like to increase the number of simultaneous users, you may provide additional print copies for us to sequester. For every print copy we sequester, we can allow one online user in accordance with <a href="https://www.controlleddigitallending.org/">controlled digital lending</a> principles.'
         if scanned_appear and physical_appear:
-            email_str += '<br>'
+            email_str += "<br>"
         if physical_appear:
-            email_str += '<br>Physical copies are available for checkout at the Borrowing & Information desk for three hours at a time.'
-        if (scanned_appear and ebook_appear) or (
-                physical_appear and ebook_appear):
-            email_str += '<br>'
+            email_str += "<br>Physical copies are available for checkout at the Borrowing & Information desk for three hours at a time."
+        if (scanned_appear and ebook_appear) or (physical_appear and ebook_appear):
+            email_str += "<br>"
         if ebook_appear:
-            email_str += '<br>When purchasing ebooks, we prioritize unlimited-user licenses, but these are not always available.'
+            email_str += "<br>When purchasing ebooks, we prioritize unlimited-user licenses, but these are not always available."
 
         final_data["Book Output"].append(email_str)
 
     write_to_excel(output_path, final_data, "Email List")
     update_excel(input_path, book_idx, process_sheet)
     print("Email sheet exported. Main sheet updated.")
+
 
 # the goal here should be to load book data into a book object,
 # then for each instance of an instructor for that book,

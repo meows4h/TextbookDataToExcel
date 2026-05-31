@@ -50,48 +50,23 @@ class GUI:
     # used for updating the main screen message
     def print_main(self, message):
         self.reset_main()
-        ttk.Label(
-            self.main_tab,
-            text=message).grid(
-            column=0,
-            row=0,
-            sticky=tk.W)
+        ttk.Label(self.main_tab, text=message).grid(column=0, row=0, sticky=tk.W)
 
     # building the main tab
     def build_main(self):
         self.reset_main()
         ttk.Button(
-            self.main_tab,
-            text="New Sheet",
-            command=lambda: self.start_mode(
-                flag=1)).grid(
-            column=0,
-            row=0,
-            sticky=tk.E)
+            self.main_tab, text="New Sheet", command=lambda: self.start_mode(flag=1)
+        ).grid(column=0, row=0, sticky=tk.E)
         ttk.Button(
-            self.main_tab,
-            text="CSV",
-            command=lambda: self.start_mode(
-                flag=2)).grid(
-            column=0,
-            row=1,
-            sticky=tk.E)
+            self.main_tab, text="CSV", command=lambda: self.start_mode(flag=2)
+        ).grid(column=0, row=1, sticky=tk.E)
         ttk.Button(
-            self.main_tab,
-            text="Email",
-            command=lambda: self.start_mode(
-                flag=3)).grid(
-            column=0,
-            row=2,
-            sticky=tk.E)
+            self.main_tab, text="Email", command=lambda: self.start_mode(flag=3)
+        ).grid(column=0, row=2, sticky=tk.E)
         ttk.Button(
-            self.main_tab,
-            text="Update",
-            command=lambda: self.start_mode(
-                flag=4)).grid(
-            column=0,
-            row=3,
-            sticky=tk.E)
+            self.main_tab, text="Update", command=lambda: self.start_mode(flag=4)
+        ).grid(column=0, row=3, sticky=tk.E)
 
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
@@ -105,11 +80,8 @@ class GUI:
         # modifying the output file name
         # otherwise unsure, maybe checkboxes for this?
         ttk.Label(
-            self.options_tab,
-            text="Putting some easier to modify options here later.").grid(
-            column=0,
-            row=0,
-            sticky=tk.W)
+            self.options_tab, text="Putting some easier to modify options here later."
+        ).grid(column=0, row=0, sticky=tk.W)
 
     # building the headers tab
     def build_headers(self):
@@ -122,35 +94,20 @@ class GUI:
             if curr_row == 0:
                 col_num += 1
                 self.headers_tab.columnconfigure(col_num, minsize=240)
-            ttk.Label(
-                self.headers_tab,
-                text=key).grid(
-                column=col_num,
-                row=curr_row,
-                sticky=tk.W)
+            ttk.Label(self.headers_tab, text=key).grid(
+                column=col_num, row=curr_row, sticky=tk.W
+            )
             self.header_set[key] = tk.StringVar()
             self.header_set[key].set(names[key])
-            ttk.Entry(
-                self.headers_tab,
-                textvariable=self.header_set[key]).grid(
-                column=col_num,
-                row=curr_row,
-                padx=40,
-                sticky=tk.E)
+            ttk.Entry(self.headers_tab, textvariable=self.header_set[key]).grid(
+                column=col_num, row=curr_row, padx=40, sticky=tk.E
+            )
         ttk.Button(
-            self.headers_tab,
-            text="Save to File",
-            command=self.write_headers).grid(
-            column=0,
-            row=max_rows +
-            3,
-            sticky=tk.W)
+            self.headers_tab, text="Save to File", command=self.write_headers
+        ).grid(column=0, row=max_rows + 3, sticky=tk.W)
         ttk.Label(
-            self.headers_tab,
-            text="Widen the window to see all the options!").grid(
-            column=0,
-            row=max_rows + 4,
-            sticky=tk.W)
+            self.headers_tab, text="Widen the window to see all the options!"
+        ).grid(column=0, row=max_rows + 4, sticky=tk.W)
 
     # building the advanced options tab
     def build_advanced(self):
@@ -159,40 +116,23 @@ class GUI:
             self.advanced_tab.columnconfigure(idx, minsize=240)
             ttk.Label(self.advanced_tab, text=section).grid(column=idx, row=0)
             for jdx, cfgkey in enumerate(self.cfg[section], 1):
-                ttk.Label(
-                    self.advanced_tab,
-                    text=cfgkey).grid(
-                    column=idx,
-                    row=jdx,
-                    sticky=tk.W)
+                ttk.Label(self.advanced_tab, text=cfgkey).grid(
+                    column=idx, row=jdx, sticky=tk.W
+                )
                 key = f"{idx}-{jdx}"
                 self.adv_set[key] = tk.StringVar()
-                self.adv_set[key].set(
-                    self.cfg[section][cfgkey].replace(
-                        '%', '%%'))
-                ttk.Entry(
-                    self.advanced_tab,
-                    textvariable=self.adv_set[key]).grid(
-                    column=idx,
-                    row=jdx,
-                    padx=25,
-                    sticky=tk.E)
+                self.adv_set[key].set(self.cfg[section][cfgkey].replace("%", "%%"))
+                ttk.Entry(self.advanced_tab, textvariable=self.adv_set[key]).grid(
+                    column=idx, row=jdx, padx=25, sticky=tk.E
+                )
                 if jdx + 2 > max_depth:
                     max_depth = jdx + 2
-        ttk.Button(
-            self.advanced_tab,
-            text="Save to File",
-            command=self.write_cfg).grid(
-            column=0,
-            row=max_depth + 1,
-            sticky=tk.W,
-            columnspan=5)
+        ttk.Button(self.advanced_tab, text="Save to File", command=self.write_cfg).grid(
+            column=0, row=max_depth + 1, sticky=tk.W, columnspan=5
+        )
         ttk.Label(
-            self.advanced_tab,
-            text="Widen the window to see all the options!").grid(
-            column=0,
-            row=max_depth + 2,
-            sticky=tk.W)
+            self.advanced_tab, text="Widen the window to see all the options!"
+        ).grid(column=0, row=max_depth + 2, sticky=tk.W)
 
     def build_sheet_outlook(self):
         self.reset_main()
@@ -200,33 +140,19 @@ class GUI:
 
         ttk.Label(
             self.main_tab,
-            text="Would you like to open Outlook for collecting email addresses?").grid(
-            column=0,
-            row=0,
-            sticky=tk.W)
+            text="Would you like to open Outlook for collecting email addresses?",
+        ).grid(column=0, row=0, sticky=tk.W)
         ttk.Button(
             self.main_tab,
             text="Yes",
-            command=lambda: [
-                exec("self.open_outlook = True"),
-                self.build_sheet_alma()]).grid(
-            column=0,
-            row=1,
-            sticky=tk.W)
-        ttk.Button(
-            self.main_tab,
-            text="No",
-            command=self.build_sheet_alma).grid(
-            column=0,
-            row=2,
-            sticky=tk.W)
-        ttk.Button(
-            self.main_tab,
-            text="Go Back",
-            command=self.build_main).grid(
-            column=0,
-            row=5,
-            sticky=tk.W)
+            command=lambda: [exec("self.open_outlook = True"), self.build_sheet_alma()],
+        ).grid(column=0, row=1, sticky=tk.W)
+        ttk.Button(self.main_tab, text="No", command=self.build_sheet_alma).grid(
+            column=0, row=2, sticky=tk.W
+        )
+        ttk.Button(self.main_tab, text="Go Back", command=self.build_main).grid(
+            column=0, row=5, sticky=tk.W
+        )
 
     def build_sheet_alma(self):
         self.reset_main()
@@ -234,38 +160,24 @@ class GUI:
 
         ttk.Label(
             self.main_tab,
-            text="Would you like to open Alma for collecting access analytics?").grid(
-            column=0,
-            row=0,
-            sticky=tk.W)
+            text="Would you like to open Alma for collecting access analytics?",
+        ).grid(column=0, row=0, sticky=tk.W)
         ttk.Button(
             self.main_tab,
             text="Yes",
-            command=lambda: [
-                exec("self.open_alma = True"),
-                self.build_sheet_final()]).grid(
-            column=0,
-            row=1,
-            sticky=tk.W)
+            command=lambda: [exec("self.open_alma = True"), self.build_sheet_final()],
+        ).grid(column=0, row=1, sticky=tk.W)
+        ttk.Button(self.main_tab, text="No", command=self.build_sheet_final).grid(
+            column=0, row=2, sticky=tk.W
+        )
         ttk.Button(
-            self.main_tab,
-            text="No",
-            command=self.build_sheet_final).grid(
-            column=0,
-            row=2,
-            sticky=tk.W)
-        ttk.Button(
-            self.main_tab,
-            text="Go Back",
-            command=self.build_sheet_outlook).grid(
-            column=0,
-            row=5,
-            sticky=tk.W)
+            self.main_tab, text="Go Back", command=self.build_sheet_outlook
+        ).grid(column=0, row=5, sticky=tk.W)
 
     def build_sheet_final(self):
         excel_thread = threading.Thread(
-            target=lambda: make_excel_sheet(
-                self.open_outlook, self.open_alma, self))
+            target=lambda: make_excel_sheet(self.open_outlook, self.open_alma, self)
+        )
         excel_thread.start()
         # make_excel_sheet(self.open_outlook, self.open_alma, self)
         self.build_main()
@@ -281,36 +193,20 @@ class GUI:
         # csv update
         elif kwargs["flag"] == 2:
             ttk.Label(
-                self.main_tab,
-                text="What CSV file would you like to update?").grid(
-                column=0,
-                row=0,
-                sticky=tk.W)
-            ttk.Button(
-                self.main_tab,
-                text="Email Data").grid(
-                column=0,
-                row=1,
-                sticky=tk.W)
-            ttk.Button(
-                self.main_tab,
-                text="Bookstore Data").grid(
-                column=0,
-                row=2,
-                sticky=tk.W)
-            ttk.Button(
-                self.main_tab,
-                text="Analytics Data").grid(
-                column=0,
-                row=3,
-                sticky=tk.W)
-            ttk.Button(
-                self.main_tab,
-                text="Go Back",
-                command=self.build_main).grid(
-                column=0,
-                row=5,
-                sticky=tk.W)
+                self.main_tab, text="What CSV file would you like to update?"
+            ).grid(column=0, row=0, sticky=tk.W)
+            ttk.Button(self.main_tab, text="Email Data").grid(
+                column=0, row=1, sticky=tk.W
+            )
+            ttk.Button(self.main_tab, text="Bookstore Data").grid(
+                column=0, row=2, sticky=tk.W
+            )
+            ttk.Button(self.main_tab, text="Analytics Data").grid(
+                column=0, row=3, sticky=tk.W
+            )
+            ttk.Button(self.main_tab, text="Go Back", command=self.build_main).grid(
+                column=0, row=5, sticky=tk.W
+            )
 
         # email export
         elif kwargs["flag"] == 3:
@@ -321,44 +217,26 @@ class GUI:
             sheet_name.set("Spring26")
             ttk.Label(
                 self.main_tab,
-                text="Input which file is being pulled from & updated (i.e. output.xlsx):").grid(
-                column=0,
-                row=0,
-                sticky=tk.W)
-            ttk.Entry(
-                self.main_tab,
-                textvariable=file_name).grid(
-                column=0,
-                row=1,
-                sticky=tk.W)
+                text="Input which file is being pulled from & updated (i.e. output.xlsx):",
+            ).grid(column=0, row=0, sticky=tk.W)
+            ttk.Entry(self.main_tab, textvariable=file_name).grid(
+                column=0, row=1, sticky=tk.W
+            )
             ttk.Label(
                 self.main_tab,
-                text="Input which sheet is being pulled from (i.e. Spring26):").grid(
-                column=0,
-                row=2,
-                sticky=tk.W)
-            ttk.Entry(
-                self.main_tab,
-                textvariable=sheet_name).grid(
-                column=0,
-                row=3,
-                sticky=tk.W)
+                text="Input which sheet is being pulled from (i.e. Spring26):",
+            ).grid(column=0, row=2, sticky=tk.W)
+            ttk.Entry(self.main_tab, textvariable=sheet_name).grid(
+                column=0, row=3, sticky=tk.W
+            )
             ttk.Button(
                 self.main_tab,
                 text="Export Sheet",
-                command=lambda: create_email_excel(
-                    sheet_name.get(),
-                    file_name.get())).grid(
-                column=0,
-                row=4,
-                sticky=tk.W)
-            ttk.Button(
-                self.main_tab,
-                text="Go Back",
-                command=self.build_main).grid(
-                column=0,
-                row=5,
-                sticky=tk.W)
+                command=lambda: create_email_excel(sheet_name.get(), file_name.get()),
+            ).grid(column=0, row=4, sticky=tk.W)
+            ttk.Button(self.main_tab, text="Go Back", command=self.build_main).grid(
+                column=0, row=5, sticky=tk.W
+            )
 
         # updating main sheet
         elif kwargs["flag"] == 4:
@@ -369,63 +247,43 @@ class GUI:
             sheet_name.set("Spring26")
             ttk.Label(
                 self.main_tab,
-                text="Input which file is being updated (i.e. output.xlsx):").grid(
-                column=0,
-                row=0,
-                sticky=tk.W)
-            ttk.Entry(
-                self.main_tab,
-                textvariable=file_name).grid(
-                column=0,
-                row=1,
-                sticky=tk.W)
+                text="Input which file is being updated (i.e. output.xlsx):",
+            ).grid(column=0, row=0, sticky=tk.W)
+            ttk.Entry(self.main_tab, textvariable=file_name).grid(
+                column=0, row=1, sticky=tk.W
+            )
             ttk.Label(
                 self.main_tab,
-                text="Input which sheet is being updated (i.e. Spring26):").grid(
-                column=0,
-                row=2,
-                sticky=tk.W)
-            ttk.Entry(
-                self.main_tab,
-                textvariable=sheet_name).grid(
-                column=0,
-                row=3,
-                sticky=tk.W)
+                text="Input which sheet is being updated (i.e. Spring26):",
+            ).grid(column=0, row=2, sticky=tk.W)
+            ttk.Entry(self.main_tab, textvariable=sheet_name).grid(
+                column=0, row=3, sticky=tk.W
+            )
             ttk.Button(
                 self.main_tab,
                 text="Update Emails",
-                command=lambda: emails_update(sheet_name.get())).grid(
-                column=0,
-                row=5,
-                sticky=tk.W)
+                command=lambda: emails_update(sheet_name.get()),
+            ).grid(column=0, row=5, sticky=tk.W)
             ttk.Button(
                 self.main_tab,
                 text="Update Analytics",
-                command=lambda: analytics_update(sheet_name.get())).grid(
-                column=0,
-                row=6,
-                sticky=tk.W)
+                command=lambda: analytics_update(sheet_name.get()),
+            ).grid(column=0, row=6, sticky=tk.W)
             ttk.Button(
                 self.main_tab,
                 text="Update Enrollment",
-                command=lambda: enrollment_update(sheet_name.get())).grid(
-                column=0,
-                row=7,
-                sticky=tk.W)
-            ttk.Button(
-                self.main_tab,
-                text="Go Back",
-                command=self.build_main).grid(
-                column=0,
-                row=8,
-                sticky=tk.W)
+                command=lambda: enrollment_update(sheet_name.get()),
+            ).grid(column=0, row=7, sticky=tk.W)
+            ttk.Button(self.main_tab, text="Go Back", command=self.build_main).grid(
+                column=0, row=8, sticky=tk.W
+            )
 
     def write_cfg(self):
         for idx, section in enumerate(self.cfg.sections()):
             for jdx, cfgkey in enumerate(self.cfg[section], 1):
                 key = f"{idx}-{jdx}"
                 self.cfg[section][cfgkey] = self.adv_set[key].get()
-        with open(self.cfg_path, 'w') as cfgfile:
+        with open(self.cfg_path, "w") as cfgfile:
             self.cfg.write(cfgfile)
 
     def write_headers(self):
@@ -434,7 +292,7 @@ class GUI:
         temp_cfg.read(cfgdir)
         for key in temp_cfg["Names"]:
             temp_cfg["Names"][key] = self.header_set[key].get()
-        with open(cfgdir, 'w') as cfgfile:
+        with open(cfgdir, "w") as cfgfile:
             temp_cfg.write(cfgfile)
 
 

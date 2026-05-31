@@ -54,10 +54,9 @@ def get_row_price(driver, row, link):
     driver.get(link)
 
     try:
-        WebDriverWait(
-            driver, 5).until(
-                EC.presence_of_element_located(
-                    (By.CLASS_NAME, "item")))
+        WebDriverWait(driver, 5).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "item"))
+        )
         materials = driver.find_elements(By.CLASS_NAME, "item")
         book_found = False
         main_div = None
@@ -204,8 +203,7 @@ def pull_textbook_data():
     for term in terms:
 
         curr_page = get_page_soup(
-            driver,
-            f"https://beavs.osubeaverstore.com/Textbooks.asp?TermID={term[0]}"
+            driver, f"https://beavs.osubeaverstore.com/Textbooks.asp?TermID={term[0]}"
         )
 
         departments = []
@@ -228,10 +226,10 @@ def pull_textbook_data():
         # goes through each department
         for department in departments:
             curr_page = get_page_soup(
-                driver,
-                f"https://beavs.osubeaverstore.com/Textbooks.asp?TermID={
+                driver, f"https://beavs.osubeaverstore.com/Textbooks.asp?TermID={
                     term[0]}&DeptID={
-                    department[0]}")
+                    department[0]}"
+            )
 
             # for all the tables
             for num, table in enumerate(curr_page.find_all("table")):

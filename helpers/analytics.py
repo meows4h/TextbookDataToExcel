@@ -51,51 +51,68 @@ def get_columns(key="ebook"):
     sql_columns = []
     overall_section = ""
     if key == "ebook":
-        sql_columns = [{"Key": "Bibliographic Details",
-                        "Cols": ["Author",
-                                 "Earliest Possible Publication Year",
-                                 "Title",
-                                 "Publisher",
-                                 "MMS Id",
-                                 "ISBN",
-                                 "Edition",
-                                 "Material Type",
-                                 "Resource Type"]},
-                       {"Key": "Representation Access Rights",
-                        "Cols": ["Access Right Name",
-                                 "Access Right Desc"]},
-                       {"Key": "Edition Simplified",
-                        "Cols": ["Edition Simplified (Num)"]}]
+        sql_columns = [
+            {
+                "Key": "Bibliographic Details",
+                "Cols": [
+                    "Author",
+                    "Earliest Possible Publication Year",
+                    "Title",
+                    "Publisher",
+                    "MMS Id",
+                    "ISBN",
+                    "Edition",
+                    "Material Type",
+                    "Resource Type",
+                ],
+            },
+            {
+                "Key": "Representation Access Rights",
+                "Cols": ["Access Right Name", "Access Right Desc"],
+            },
+            {"Key": "Edition Simplified", "Cols": ["Edition Simplified (Num)"]},
+        ]
         overall_section = "Digital Inventory"
 
     elif key == "physical":
-        sql_columns = [{"Key": "Bibliographic Details",
-                        "Cols": [
-                            "Author",
-                            "Title",
-                            "ISBN",
-                            "Resource Type",
-                            "MMS Id",
-                            "Earliest Possible Publication Year"]},
-                       {"Key": "Physical Item Details",
-                        "Cols": ["Material Type", "Num of Items (In Repository)",
-                                 "Temporary Physical Location in Use"]},
-                       {"Key": "Holdings Details",
-                        "Cols": ["Holdings Lifecycle", "Suppressed from Discovery"]},
-                       {"Key": "Edition Simplified",
-                        "Cols": ["Edition Simplified (Num)"]},
-                       {"Key": "Location",
-                        "Cols": ["Location Name"]},
-                       {"Key": "Temporary Location",
-                        "Cols": ["Temporary Location Name"]}
-                       ]
+        sql_columns = [
+            {
+                "Key": "Bibliographic Details",
+                "Cols": [
+                    "Author",
+                    "Title",
+                    "ISBN",
+                    "Resource Type",
+                    "MMS Id",
+                    "Earliest Possible Publication Year",
+                ],
+            },
+            {
+                "Key": "Physical Item Details",
+                "Cols": [
+                    "Material Type",
+                    "Num of Items (In Repository)",
+                    "Temporary Physical Location in Use",
+                ],
+            },
+            {
+                "Key": "Holdings Details",
+                "Cols": ["Holdings Lifecycle", "Suppressed from Discovery"],
+            },
+            {"Key": "Edition Simplified", "Cols": ["Edition Simplified (Num)"]},
+            {"Key": "Location", "Cols": ["Location Name"]},
+            {"Key": "Temporary Location", "Cols": ["Temporary Location Name"]},
+        ]
         overall_section = "Physical Items"
 
     elif key == "e-inventory":
-        sql_columns = [{"Key": "Bibliographic Details",
-                        "Cols": ["MMS Id"]},
-                       {"Key": "Electronic Collection",
-                        "Cols": ["Electronic Collection Public Name"]}]
+        sql_columns = [
+            {"Key": "Bibliographic Details", "Cols": ["MMS Id"]},
+            {
+                "Key": "Electronic Collection",
+                "Cols": ["Electronic Collection Public Name"],
+            },
+        ]
         overall_section = "E-Inventory"
     # isbn_list = [9781478651123, 9780357900161, 9781544342337, 9781394152100]
     return overall_section, sql_columns
@@ -138,7 +155,7 @@ def get_table(driver):
 # Print books were ONLY from our MAIN collection
 def pull_one_search(driver, mms_list):
     """Opens a OneSearch tab to double check that the MMS ID exists within Primo.
-       Takes a list and returns a list, though only used with single IDs right now."""
+    Takes a list and returns a list, though only used with single IDs right now."""
     search_link = "https://search.library.oregonstate.edu/discovery/search?query=any,contains,%&tab=Everything&search_scope=OSU_Everything_Profile&vid=01ALLIANCE_OSU:OSU&lang=en&offset=0"
     # 991019530001865 example id for testing
     base_window = driver.current_window_handle
@@ -156,10 +173,9 @@ def pull_one_search(driver, mms_list):
         # appends false, otherwise, appends true
         while True:
             try:
-                WebDriverWait(
-                    driver, 3).until(
-                    EC.presence_of_element_located(
-                        (By.CLASS_NAME, "md-headline")))
+                WebDriverWait(driver, 3).until(
+                    EC.presence_of_element_located((By.CLASS_NAME, "md-headline"))
+                )
                 found = False
                 # print(search_box)
                 break
@@ -248,12 +264,12 @@ def check_permalink(driver, link):
     driver.get(link)
     while True:
         try:
-            WebDriverWait(
-                driver,
-                6).until(
+            WebDriverWait(driver, 6).until(
                 EC.presence_of_element_located(
                     By.CSS_SELECTOR,
-                    f"h2[translate='nui.search.error.permalink.header']"))
+                    f"h2[translate='nui.search.error.permalink.header']",
+                )
+            )
             correct = False
             break
         except Exception as err:
@@ -314,19 +330,14 @@ def pull_analytics(driver, isbn_list, state):
 
 def input_sql(driver, text=""):
     """Helper function that inputs the given text into the SQL input box."""
-    click_element(
-        driver,
-        "td",
-        "title",
-        "Edit SQL, XML and other technical details")
+    click_element(driver, "td", "title", "Edit SQL, XML and other technical details")
     click_element(driver, "a", "title", "New Analysis")
 
     while True:
         try:
-            sql_box = WebDriverWait(
-                driver, 5).until(
-                EC.presence_of_element_located(
-                    (By.ID, "idNewSimpleSqlRequestInput")))
+            sql_box = WebDriverWait(driver, 5).until(
+                EC.presence_of_element_located((By.ID, "idNewSimpleSqlRequestInput"))
+            )
             break
         except Exception as err:
             print("waiting for open sql box")
@@ -408,7 +419,8 @@ def process_analytics(analytics_driver, isbn):
         check_list = pull_one_search(analytics_driver, [mms_id])
         if check_list[0] is False:
             print(
-                f"Missing from Primo (PHYSICAL); skipping. {mms_id} : num:{num_items} supp:{suppressed}")
+                f"Missing from Primo (PHYSICAL); skipping. {mms_id} : num:{num_items} supp:{suppressed}"
+            )
             continue
 
         # tracking physical location
@@ -430,13 +442,15 @@ def process_analytics(analytics_driver, isbn):
             year = listing["Earliest Possible Publication Year"]
 
         if mms_id not in data:
-            data[mms_id] = {"Types": [book_type],
-                            "Copies": [copy_count],
-                            "Users": [0],
-                            "CDL": [False],
-                            "Link": link,
-                            "Year": year,
-                            "Location": location}
+            data[mms_id] = {
+                "Types": [book_type],
+                "Copies": [copy_count],
+                "Users": [0],
+                "CDL": [False],
+                "Link": link,
+                "Year": year,
+                "Location": location,
+            }
         else:
             if book_type not in data[mms_id]["Types"]:
                 data[mms_id]["Types"].append(book_type)
@@ -466,8 +480,7 @@ def process_analytics(analytics_driver, isbn):
         # double check implementation of this one search checker
         check_list = pull_one_search(analytics_driver, [mms_id])
         if check_list[0] is False:
-            print(
-                f"Missing from Primo (EBOOK); skipping. {mms_id}")
+            print(f"Missing from Primo (EBOOK); skipping. {mms_id}")
             continue
 
         # TODO
@@ -489,13 +502,15 @@ def process_analytics(analytics_driver, isbn):
             users = get_int(temp[1])
 
         if mms_id not in data:
-            data[mms_id] = {"Types": [book_type],
-                            "Copies": [0],
-                            "Users": [users],
-                            "CDL": [cdl],
-                            "Link": link,
-                            "Platform": access_platform,
-                            "Year": year}
+            data[mms_id] = {
+                "Types": [book_type],
+                "Copies": [0],
+                "Users": [users],
+                "CDL": [cdl],
+                "Link": link,
+                "Platform": access_platform,
+                "Year": year,
+            }
         else:
             if book_type not in data[mms_id]["Types"]:
                 data[mms_id]["Types"].append(book_type)
