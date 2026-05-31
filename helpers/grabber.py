@@ -178,6 +178,63 @@ def setup_grabber(gui):
     return driver
 
 
+def grabber_gui(driver_list=[]):
+    # global check_state
+    # global driver
+
+    # the idea here would be if the driver list is empty
+    # we are setting the driver up and using the list to pass it back
+
+    # otherwise we can look at the information we are wanting to 
+    # get the email from / with ?
+
+    # alternatively, we can pass in the entire section of data that
+    # we are needing to manage and let it run from start to finish
+    # in a thread all by itself instead of going back and forth
+    
+    # latter option probably better
+    if driver_list == []:
+        check_state = False
+        driver = webdriver.Chrome()
+        driver_list.append(driver)
+
+    # def run_get_email():
+
+    def run_check_web(driver):
+        # global check_state
+        break_check = False
+        while not break_check:
+            time.sleep(5)
+            try:
+                driver.find_element(By.ID, "0")
+                break_check = True
+            except BaseException:
+                instruction = "Waiting for new email composition window."
+                if not check_state:
+                    check_state = True
+                    ui_thread = threading.Thread(target=run_ui)
+                    ui_thread.start()
+    
+    def run_ui():
+        # global check_state
+        gui_window = AddedGUI(title="Email Grabber Helper")
+        gui_window.add_label("Some text")
+        gui_window.add_button("Okay im done", gui_window.root.destroy)
+        gui_window.root.mainloop()
+        check_state = False
+
+    full_config = configparser.ConfigParser()
+    full_config.read("config.ini")
+    config = full_config["Grabber"]
+    link = config["EmailLink"]
+    driver.get(link)
+    check_thread = threading.Thread(target=lambda: run_check_web(driver))
+    check_thread.start()
+    print("Waiting 1")
+    check_thread.join()
+    print("Waiting 2")
+
+
 def start_browser():
     print("test")
     # maybe port some of the selenium setup code into this code

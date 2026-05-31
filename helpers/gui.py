@@ -269,7 +269,6 @@ class GUI:
             target=lambda: make_excel_sheet(
                 self.open_outlook, self.open_alma, self))
         excel_thread.start()
-        # make_excel_sheet(self.open_outlook, self.open_alma, self)
         self.build_main()
 
     def build_import_csv(self, yes_cmd, no_cmd):
@@ -310,17 +309,18 @@ class GUI:
         analytics_thread.start()
         self.build_main()
 
-    def start_bookstore_site(self):
+    def start_bookstore_csv(self):
         bookstore_thread = threading.Thread(target=pull_textbook_data)
         bookstore_thread.start()
         self.build_main()
 
-    def start_bookstore_pull(self):
-        bookstore_cfg = self.cfg["Textbook"]
-        textbk_path = get_directory("Save", bookstore_cfg)
-        bookstore_thread = threading.Thread(target=lambda: pull_info(textbk_path))
-        bookstore_thread.start()
-        self.build_main()
+    # is this necessary actually? usually updating bookstore = overwriting
+    # def start_bookstore_pull(self):
+    #     bookstore_cfg = self.cfg["Textbook"]
+    #     textbk_path = get_directory("Save", bookstore_cfg)
+    #     bookstore_thread = threading.Thread(target=lambda: pull_info(textbk_path))
+    #     bookstore_thread.start()
+    #     self.build_main()
 
     # function that handles options from the home screen
     def start_mode(self, *args, **kwargs):
@@ -346,7 +346,8 @@ class GUI:
                 sticky=tk.W)
             ttk.Button(
                 self.main_tab,
-                text="Bookstore Data").grid(
+                text="Bookstore Data"
+                command=self.start_bookstore_csv).grid(
                 column=0,
                 row=2,
                 sticky=tk.W)

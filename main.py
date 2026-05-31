@@ -5,7 +5,18 @@ from helpers.modes import start_mode
 from helpers.gui import start_app
 from helpers.sheetmaker import make_excel_sheet
 
-# TODO:
+# SHORT TERM TODO:
+# - Add GUI elements to Bookstore, Analytics, and Email Grabber Setup
+# - Fully implement an interactive end to the Email Grabber using GUI
+# - Tie in the last needed button implementations
+# - Reference temp file for ideas on how to implement this
+
+# MID TERM TODO:
+# - Relook into fixing analytics data pulling
+# - Ensure OneSearch scope is correct and/or reassess the bookstore ISBN pulling
+# - Updating information properly, but also automatically
+
+# BIG PICTURE TODO:
 # - Adding prices from the bookstore site into the bookstore information!
 # - Double check back over all the overdrive books among other ebook sources!
 # - Finish GUI implementation (AND multithreading)
