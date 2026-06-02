@@ -314,13 +314,12 @@ class GUI:
         bookstore_thread.start()
         self.build_main()
 
-    # is this necessary actually? usually updating bookstore = overwriting
-    # def start_bookstore_pull(self):
-    #     bookstore_cfg = self.cfg["Textbook"]
-    #     textbk_path = get_directory("Save", bookstore_cfg)
-    #     bookstore_thread = threading.Thread(target=lambda: pull_info(textbk_path))
-    #     bookstore_thread.start()
-    #     self.build_main()
+    def start_grabber_csv(self, import_csv):
+        bookstore_cfg = self.cfg["Textbook"]
+        textbk_path = get_directory("Save", bookstore_cfg)
+        grabber_thread = threading.Thread(target=lambda: emails_csv(self.cfg, textbk_path, import_csv))
+        grabber_thread.start()
+        self.build_main()
 
     # function that handles options from the home screen
     def start_mode(self, *args, **kwargs):
@@ -340,21 +339,18 @@ class GUI:
                 sticky=tk.W)
             ttk.Button(
                 self.main_tab,
-                text="Email Data").grid(
+                text="Email Data",
+                command=lambda: self.build_import_csv("self.start_grabber_csv(True)", "self.start_grabber_csv(False)")).grid(
                 column=0,
                 row=1,
                 sticky=tk.W)
             ttk.Button(
                 self.main_tab,
-                text="Bookstore Data"
+                text="Bookstore Data",
                 command=self.start_bookstore_csv).grid(
                 column=0,
                 row=2,
                 sticky=tk.W)
-            # this button is where i leftoff
-            # still needs to have all the info overhauled into AddedGUI format instead of the
-            # CLI print, but! this is functional now more than anything
-            # base the other buttons off of this
             ttk.Button(
                 self.main_tab,
                 text="Analytics Data",

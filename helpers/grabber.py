@@ -1,6 +1,8 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import bs4
 import configparser
 import time
@@ -30,7 +32,7 @@ def process_suggestion(box, len_check=False):
         # could check for name info with list_info[0], some comparison
         if list_info:
             return list_info[1].get_text()
-
+ 
 
 def get_email(name, driver):
     """Grabs the first email from the suggestion list
@@ -146,13 +148,7 @@ def get_email(name, driver):
                 state = 11
 
 
-# TODO
-# finish gui implementation
-# temp implementation is an option but need to brainstorm longer about how to fix this
-# for now, i say leave it? focus on fixing the analytics implementation?
-# or maybe rewrite the whole setup to be in threads instead of blocking
-# selenium format. i think that would prove to improve efficiency
-def setup_grabber(gui):
+def setup_grabber():
     """Sets up a selenium browser to pull emails from later."""
     full_config = configparser.ConfigParser()
     full_config.read("config.ini")
@@ -178,30 +174,26 @@ def setup_grabber(gui):
     return driver
 
 
-def grabber_gui(driver_list=[]):
-    # global check_state
-    # global driver
-
-    # the idea here would be if the driver list is empty
-    # we are setting the driver up and using the list to pass it back
-
-    # otherwise we can look at the information we are wanting to 
-    # get the email from / with ?
-
+def grabber_gui(textbook_table, email_dict):
     # alternatively, we can pass in the entire section of data that
     # we are needing to manage and let it run from start to finish
     # in a thread all by itself instead of going back and forth
-    
-    # latter option probably better
-    if driver_list == []:
-        check_state = False
-        driver = webdriver.Chrome()
-        driver_list.append(driver)
+    check_state = False
+    driver = webdriver.Chrome()
 
     # def run_get_email():
 
-    def run_check_web(driver):
-        # global check_state
+    def run_check_ui():
+        nonlocal check_state
+        gui_window = AddedGUI(title="Email Grabber Helper")
+        gui_window.add_label("Waiting for email composition window.")
+        gui_window.add_button("Okay I did that", gui_window.root.destroy)
+        gui_window.root.mainloop()
+        check_state = False
+
+    def run_check_web():
+        nonlocal check_state
+        nonlocal driver
         break_check = False
         while not break_check:
             time.sleep(5)
@@ -209,81 +201,69 @@ def grabber_gui(driver_list=[]):
                 driver.find_element(By.ID, "0")
                 break_check = True
             except BaseException:
-                instruction = "Waiting for new email composition window."
                 if not check_state:
                     check_state = True
-                    ui_thread = threading.Thread(target=run_ui)
+                    ui_thread = threading.Thread(target=run_check_ui)
                     ui_thread.start()
-    
-    def run_ui():
-        # global check_state
-        gui_window = AddedGUI(title="Email Grabber Helper")
-        gui_window.add_label("Some text")
-        gui_window.add_button("Okay im done", gui_window.root.destroy)
-        gui_window.root.mainloop()
-        check_state = False
 
+    # TODO leftoff here
+    def run_get_email(name):
+        nonlocal driver
+        nonlocal check_state
+        break_check = False
+        while not break_check:
+            time.sleep(5)
+            try:
+                to_box = driver.find_element(By.ID, "0")
+                break_check = True
+            except BaseException:
+                if not check_state:
+                    check_state = True
+                    ui_thread = threading.Thread(target=run_check_ui)
+                    ui_thread.start()
+        
+        name = name.replace(",", "")
+        name = name.strip()
+        base_name = name
+        to_box.clear()
+        to_box.send_keys(name)
+
+        # porting over functions from get_email()
+        # can functionize the temp name portions?
+        state = 1
+        while True:
+            try:
+                WebDriverWait(driver, 3).until(
+                    EC.presence_of_element_located((By.CLASS_NAME, "ms-FloatingSuggestionsList-container"))
+                )
+            
+            except (ValueError, NoSuchElementException) as err:
+                
+                if state == 11 and isinstance(err, NoSuchElementException):
+                    return "NO EMAIL"
+  
     full_config = configparser.ConfigParser()
     full_config.read("config.ini")
     config = full_config["Grabber"]
     link = config["EmailLink"]
+
+    # start by opening outlook
     driver.get(link)
-    check_thread = threading.Thread(target=lambda: run_check_web(driver))
+
+    # awaiting the time where the user opens the composition window
+    check_thread = threading.Thread(target=run_check_web)
     check_thread.start()
-    print("Waiting 1")
+    print("Starting check function.")
     check_thread.join()
-    print("Waiting 2")
+    print("Check function passed.")
 
+    for row in textbook_table:
+        instructor = row[4]
+        if instructor not in email_dict:
+            email = run_get_email(instructor)
+            email_dict[f"{instructor}"] = email
+            
 
-def start_browser():
-    print("test")
-    # maybe port some of the selenium setup code into this code
-    # block, then run it out of the threads?
-    # if the threads are able to report back values, it can send
-    # values into the other GUI thread block which will help with
-    # the start stopping of everything?
-    # examples:
-
-    def task(name):
-        print(f"Task {name} starting...")
-        time.sleep(2)  # Simulates an I/O wait
-        print(f"Task {name} finished!")
-
-    # 1. Create threads
-    t1 = threading.Thread(target=task, args=("A",))
-    t2 = threading.Thread(target=task, args=("B",))
-
-    # 2. Start execution
-    t1.start()
-    t2.start()
-
-    # 3. Wait for threads to finish before continuing the main program
-    t1.join()
-    t2.join()
-
-    print("All tasks done.")
-
-    def run_selenium():
-        # This function runs in a separate thread to keep the GUI responsive
-        driver = webdriver.Chrome()
-        driver.get("https://www.google.com")
-        # Add your automation steps here
-        print("Page Title:", driver.title)
-        # driver.quit()
-
-    def start_thread():
-        # Start Selenium in a new thread
-        thread = threading.Thread(target=run_selenium)
-        thread.start()
-
-    root = tk.Tk()
-    root.title("Automation Tool")
-    root.geometry("300x150")
-
-    btn = tk.Button(root, text="Start Browser", command=start_thread)
-    btn.pack(pady=20)
-
-    root.mainloop()
 
 
 def email_importer(path):
