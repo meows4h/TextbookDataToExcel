@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import bs4
@@ -11,6 +12,43 @@ import threading
 
 from helpers.helpergui import AddedGUI
 
+
+def process_name(base, flag):
+    """"""
+    if flag == 1:
+        temp_list = base.split(" ")
+        base = ""
+        for piece in temp_list:
+            if len(piece) > 2:
+                base += f"{piece} "
+
+        base = base.strip()
+        return base, 2
+
+    # taking first and last listed
+    elif flag == 2:
+        temp_list = base.split(" ")
+        temp_name = f"{temp_list[0]} {temp_list[len(temp_list) - 1]}"
+        temp_name = temp_name.strip()
+        return temp_name, 3
+
+    # flipping first and last
+    elif flag == 3:
+        temp_list = base.split(" ")
+        temp_name = f"{temp_list[len(temp_list) - 1]} {temp_list[0]}"
+        temp_name = temp_name.strip()
+
+        if len(temp_list) > 2:
+            return temp_name, 4
+        else:
+            return temp_name, 10
+
+    # taking first two
+    elif flag == 4:
+        temp_list = base.split(" ")
+        temp_name = f"{temp_list[0]} {temp_list[1]} "
+        temp_name = temp_name.strip()
+        return temp_name, 10
 
 def process_suggestion(box, len_check=False):
     """Takes the suggestion box element and returns what the top result is."""
@@ -73,7 +111,7 @@ def get_email(name, driver):
                 checker = input(
                     'Double check the name / email, if incorrect, type "n": '
                 )
-                print(checker)
+                # print(checker)
                 if checker == "n":
                     # taking it straight to manual if incorrect with listings
                     state = 10
@@ -97,49 +135,15 @@ def get_email(name, driver):
             if state == 11 and isinstance(err, NoSuchElementException):
                 return "NO EMAIL"
 
-            # removing single letter abbreviations + jr, etc
             if state == 1:
-                temp_list = name.split(" ")
-                name = ""
-                for piece in temp_list:
-                    if len(piece) > 2:
-                        name += f"{piece} "
-
-                name = name.strip()
+                name, state = process_name(name, state)
                 to_box.clear()
                 to_box.send_keys(name)
-                state = 2
 
-            # taking first and last listed
-            elif state == 2:
-                temp_list = name.split(" ")
-                temp_name = f"{temp_list[0]} {temp_list[len(temp_list) - 1]}"
-                temp_name = temp_name.strip()
+            elif state >= 2 and state <= 4:
+                temp_name, state = process_name(name, state)
                 to_box.clear()
                 to_box.send_keys(temp_name)
-                state = 3
-
-            # flipping first and last
-            elif state == 3:
-                temp_list = name.split(" ")
-                temp_name = f"{temp_list[len(temp_list) - 1]} {temp_list[0]}"
-                temp_name = temp_name.strip()
-                to_box.clear()
-                to_box.send_keys(temp_name)
-
-                if len(temp_list) > 2:
-                    state = 4
-                else:
-                    state = 10
-
-            # taking first two
-            elif state == 4:
-                temp_list = name.split(" ")
-                temp_name = f"{temp_list[0]} {temp_list[1]} "
-                temp_name = temp_name.strip()
-                to_box.clear()
-                to_box.send_keys(temp_name)
-                state = 10
 
             # manual input
             elif state >= 10:
@@ -179,6 +183,7 @@ def grabber_gui(textbook_table, email_dict):
     # we are needing to manage and let it run from start to finish
     # in a thread all by itself instead of going back and forth
     check_state = False
+    await_suggest = 0
     driver = webdriver.Chrome()
 
     # def run_get_email():
@@ -206,10 +211,23 @@ def grabber_gui(textbook_table, email_dict):
                     ui_thread = threading.Thread(target=run_check_ui)
                     ui_thread.start()
 
-    # TODO leftoff here
+    def run_suggestion_ui(name, touch_error=False):
+        nonlocal await_suggest
+        gui_window = AddedGUI(title="Email Grabber Helper")
+        gui_window.add_label(f"Correct email for {name}?")
+        if touch_error:
+            gui_window.add_label("Do NOT touch the suggestion box.")
+        gui_window.add_button("Yes", gui_window.root.destroy)
+        if touch_error:
+            gui_window.add_button("No", lambda: exec(["await_suggest = 2", "gui_window.root.destroy()"]))
+        gui_window.root.mainloop()
+        if await_suggest == 0:
+            await_suggest = 1
+
     def run_get_email(name):
         nonlocal driver
         nonlocal check_state
+        nonlocal await_suggest
         break_check = False
         while not break_check:
             time.sleep(5)
@@ -233,14 +251,60 @@ def grabber_gui(textbook_table, email_dict):
         state = 1
         while True:
             try:
-                WebDriverWait(driver, 3).until(
+                # TODO left off with working out the quirks of this system...
+                # maybe not use webdriverwait? it takes so much longer
+                suggestion_box = WebDriverWait(driver, 3).until(
                     EC.presence_of_element_located((By.CLASS_NAME, "ms-FloatingSuggestionsList-container"))
                 )
+                if state == 1:
+                    email = process_suggestion(suggestion_box, True)
+                    if email != "":
+                        return email
+                    else:
+                        state = 10
+                        raise ValueError("too many")
+                elif state > 10:
+                    return process_suggestion(suggestion_box)
+                else:
+                    await_suggest = 0
+                    suggest_ui_thread = threading.Thread(target=lambda: run_suggestion_ui(base_name, True))
+                    suggest_ui_thread.start()
+                    while await_suggest == 0:
+                        time.sleep(1)
+                        continue
+                    if await_suggest == 1:
+                        return process_suggestion(suggestion_box)
+                    elif await_suggest == 2:
+                        state = 10
+                        raise ValueError("error with listing")
             
-            except (ValueError, NoSuchElementException) as err:
+            except (ValueError, NoSuchElementException, TimeoutException) as err:
                 
-                if state == 11 and isinstance(err, NoSuchElementException):
+                if state == 11 and (isinstance(err, NoSuchElementException) or isinstance(err, TimeoutException)):
                     return "NO EMAIL"
+                
+                if state == 1:
+                    name, state = process_name(name, state)
+                    to_box.clear()
+                    to_box.send_keys(name)
+
+                elif state >= 2 and state <= 4:
+                    temp_name, state = process_name(name, state)
+                    to_box.clear()
+                    to_box.send_keys(temp_name)
+
+                # manual input
+                elif state >= 10:
+                    await_suggest = 0
+                    suggest_ui_thread = threading.Thread(target=lambda: run_suggestion_ui(base_name))
+                    suggest_ui_thread.start()
+                    while await_suggest == 0:
+                        time.sleep(1)
+                        continue
+                    state = 11
+
+            except StaleElementReferenceException as err:
+                print(err)
   
     full_config = configparser.ConfigParser()
     full_config.read("config.ini")
@@ -257,13 +321,13 @@ def grabber_gui(textbook_table, email_dict):
     check_thread.join()
     print("Check function passed.")
 
+    email_dict["STAFF"] = "NO EMAIL"
+
     for row in textbook_table:
         instructor = row[4]
         if instructor not in email_dict:
             email = run_get_email(instructor)
             email_dict[f"{instructor}"] = email
-            
-
 
 
 def email_importer(path):
