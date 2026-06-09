@@ -11,6 +11,7 @@ import csv
 import threading
 
 from helpers.helpergui import AddedGUI
+from helpers.utilities import get_directory
 
 
 def process_name(base, flag):
@@ -219,7 +220,7 @@ def grabber_gui(textbook_table, email_dict):
             gui_window.add_label("Do NOT touch the suggestion box.")
         gui_window.add_button("Yes", gui_window.root.destroy)
         if touch_error:
-            gui_window.add_button("No", lambda: exec(["await_suggest = 2", "gui_window.root.destroy()"]))
+            gui_window.add_button("No", lambda: [exec("await_suggest = 2"), gui_window.root.destroy()])
         gui_window.root.mainloop()
         if await_suggest == 0:
             await_suggest = 1
@@ -250,11 +251,15 @@ def grabber_gui(textbook_table, email_dict):
         # can functionize the temp name portions?
         state = 1
         while True:
+            time.sleep(1)
             try:
                 # TODO left off with working out the quirks of this system...
                 # maybe not use webdriverwait? it takes so much longer
-                suggestion_box = WebDriverWait(driver, 3).until(
-                    EC.presence_of_element_located((By.CLASS_NAME, "ms-FloatingSuggestionsList-container"))
+                # suggestion_box = WebDriverWait(driver, 3).until(
+                #     EC.presence_of_element_located((By.CLASS_NAME, "ms-FloatingSuggestionsList-container"))
+                # )
+                suggestion_box = driver.find_element(
+                    By.CLASS_NAME, "ms-FloatingSuggestionsList-container"
                 )
                 if state == 1:
                     email = process_suggestion(suggestion_box, True)
@@ -270,7 +275,7 @@ def grabber_gui(textbook_table, email_dict):
                     suggest_ui_thread = threading.Thread(target=lambda: run_suggestion_ui(base_name, True))
                     suggest_ui_thread.start()
                     while await_suggest == 0:
-                        time.sleep(1)
+                        # time.sleep(1)
                         continue
                     if await_suggest == 1:
                         return process_suggestion(suggestion_box)
@@ -299,7 +304,7 @@ def grabber_gui(textbook_table, email_dict):
                     suggest_ui_thread = threading.Thread(target=lambda: run_suggestion_ui(base_name))
                     suggest_ui_thread.start()
                     while await_suggest == 0:
-                        time.sleep(1)
+                        # time.sleep(1)
                         continue
                     state = 11
 
@@ -310,6 +315,9 @@ def grabber_gui(textbook_table, email_dict):
     full_config.read("config.ini")
     config = full_config["Grabber"]
     link = config["EmailLink"]
+
+    bookstore_cfg = full_config["Textbook"]
+    textbk_path = get_directory("Save", bookstore_cfg)
 
     # start by opening outlook
     driver.get(link)
@@ -328,6 +336,9 @@ def grabber_gui(textbook_table, email_dict):
         if instructor not in email_dict:
             email = run_get_email(instructor)
             email_dict[f"{instructor}"] = email
+            email_exporter(textbk_path, email_dict)
+
+    email_exporter(textbk_path, email_dict)
 
 
 def email_importer(path):
