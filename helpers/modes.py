@@ -157,7 +157,10 @@ def analytics_csv(full_config, textbk_path, pre_import=None):
 
     # analytics implementation
     textbook_table = pull_info(textbk_path)
-    analytics_driver = setup_analytics()
+    if pre_import == None:
+        analytics_driver = setup_analytics()
+    else:
+        analytics_driver = setup_analytics(gui=True)
 
     for row in textbook_table:
         isbn = row[8].replace("-", "").strip()

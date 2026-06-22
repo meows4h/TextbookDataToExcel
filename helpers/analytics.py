@@ -10,6 +10,7 @@ import configparser
 import time
 import csv
 import ast
+import threading
 
 """
 SELECT "Bibliographic Details"."Author" saw_0,
@@ -518,8 +519,6 @@ def process_analytics(analytics_driver, isbn):
     return data
 
 
-# TODO
-# updating this for GUI
 def setup_analytics(gui=False):
     """Sets up the Selenium web browser driver to perform all analytics functions."""
     full_config = configparser.ConfigParser()
@@ -535,15 +534,19 @@ def setup_analytics(gui=False):
     # if done with other stuff, can add click events here to speed up
     # automated portion
 
-    if gui:
+    def context_window(text_list):
         gui_window = AddedGUI(title="Analytics Helper")
+        for text in text_list:
+            gui_window.add_label(text)
+        gui_window.add_button("Done", gui_window.root.destroy)
+        gui_window.root.mainloop()
 
-    instruction = "Log into Alma. Navigate to analytics section."
     if not gui:
-        print(instruction)
+        print("Log into Alma. Navigate to analytics section.")
     else:
-        gui_window.reset()
-        gui_window.add_label(instruction)
+        texts = ["Log into Alma."]
+        ui_thread = threading.Thread(target=lambda t=texts: context_window(t))
+        ui_thread.start()
 
     break_check = False
     while not break_check:
@@ -554,19 +557,14 @@ def setup_analytics(gui=False):
             driver.find_element(By.CLASS_NAME, "recentLinks")
             break_check = True
         except Exception as err:
-            instruction = "Awaiting Alma log-in"
-            if not gui:
-                print(instruction)
-            else:
-                gui_window.reset()
-                gui_window.add_label(instruction)
+            print("Awaiting Alma log-in")
 
-    instruction = "Navigate to analytics section -> access analytics"
     if not gui:
-        print(instruction)
+        print("Navigate to analytics section -> access analytics")
     else:
-        gui_window.reset()
-        gui_window.add_label(instruction)
+        texts = ["Go to Analytics.", "Then press 'Access Analytics'."]
+        ui_thread = threading.Thread(target=lambda t=texts: context_window(t))
+        ui_thread.start()
 
     while True:
         time.sleep(3)
