@@ -189,14 +189,6 @@ def grabber_gui(textbook_table, email_dict):
         nonlocal email_store
         email_store = value
 
-    def run_process_ui():
-        nonlocal check_state
-        gui_window = AddedGUI(title="Email Grabber Helper")
-        gui_window.add_label("Waiting for email composition window.")
-        gui_window.add_button("Okay I did that", gui_window.root.destroy)
-        gui_window.root.mainloop()
-        check_state = False
-
     def run_process_suggestion(box):
         while True:
             try:
