@@ -5,7 +5,12 @@ from helpers.modes import start_mode
 from helpers.gui import start_app
 from helpers.sheetmaker import make_excel_sheet
 
-# TODO:
+# MID TERM TODO:
+# - Relook into fixing analytics data pulling
+# - Ensure OneSearch scope is correct and/or reassess the bookstore ISBN pulling
+# - Updating information properly, but also automatically
+
+# BIG PICTURE TODO:
 # - Adding prices from the bookstore site into the bookstore information!
 # - Double check back over all the overdrive books among other ebook sources!
 # - Finish GUI implementation (AND multithreading)

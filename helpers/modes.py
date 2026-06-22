@@ -1,13 +1,14 @@
 import configparser
 import pandas as pd
 import openpyxl
+import threading
 
 from helpers.bookstore import pull_textbook_data, pull_info
 from helpers.utilities import get_int, get_state, get_directory
 from helpers.utilities import get_format_headers, get_input
 from helpers.utilities import get_sheet_headers, get_filepath
 from helpers.enrollment import get_enrollment_data
-from helpers.grabber import setup_grabber, get_email
+from helpers.grabber import setup_grabber, get_email, grabber_gui
 from helpers.grabber import email_exporter, email_importer
 from helpers.analytics import setup_analytics
 from helpers.analytics import export_analytics, import_analytics
@@ -90,11 +91,15 @@ Input: """
         emails_update(sheet_name)
 
 
-def emails_csv(full_config, textbk_path):
+def emails_csv(full_config, textbk_path, pre_import=None):
     """Updates the email csv file with updated information from Outlook."""
     grabber_cfg = full_config["Grabber"]
     emails_path = get_directory("Save", grabber_cfg)
-    import_data = get_import()
+
+    if pre_import == None:
+        import_data = get_import()
+    else:
+        import_data = pre_import
 
     if import_data:
         try:
@@ -104,30 +109,42 @@ def emails_csv(full_config, textbk_path):
     else:
         emails = {}
 
-    # email implementation
     textbook_table = pull_info(textbk_path)
-    grabber_driver = setup_grabber()
 
-    for row in textbook_table:
-        instructor = row[4]
-        if instructor in emails:
-            email = emails[f"{instructor}"]
-        else:
-            email = get_email(instructor, grabber_driver)
-            emails[f"{instructor}"] = email
-            print(email)
-        # exporting after each case to ensure that crashes doesnt lead to data
-        # loss
+    # this is the CLI implementation
+    if pre_import == None:
+        # email implementation
+        grabber_driver = setup_grabber()
+
+        for row in textbook_table:
+            instructor = row[4]
+            if instructor in emails:
+                email = emails[f"{instructor}"]
+            else:
+                email = get_email(instructor, grabber_driver)
+                emails[f'{instructor}'] = email
+                print(email)
+            # exporting after each case to ensure that crashes doesnt lead to data
+            # loss
+            email_exporter(emails_path, emails)
+        
         email_exporter(emails_path, emails)
+    
+    # GUI implementation
+    else:
+        gui_thread = threading.Thread(target=lambda: grabber_gui(textbook_table, emails))
+        gui_thread.start()
 
-    email_exporter(emails_path, emails)
 
-
-def analytics_csv(full_config, textbk_path):
+def analytics_csv(full_config, textbk_path, pre_import=None):
     """Updates the analytics csv file with current data from Alma analytics."""
     analytics_cfg = full_config["Alma"]
     analytics_path = get_directory("Save", analytics_cfg)
-    import_data = get_import()
+
+    if pre_import == None:
+        import_data = get_import()
+    else:
+        import_data = pre_import
 
     if import_data:
         try:
@@ -139,7 +156,10 @@ def analytics_csv(full_config, textbk_path):
 
     # analytics implementation
     textbook_table = pull_info(textbk_path)
-    analytics_driver = setup_analytics()
+    if pre_import == None:
+        analytics_driver = setup_analytics()
+    else:
+        analytics_driver = setup_analytics(gui=True)
 
     for row in textbook_table:
         isbn = row[8].replace("-", "").strip()

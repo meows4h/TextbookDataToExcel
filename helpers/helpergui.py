@@ -28,9 +28,22 @@ class AddedGUI:
         self.row += 1
 
     def add_button(self, text, cmd):
-        ttk.Button(self.root, text=text, command=cmd).grid(
-            column=self.column, row=self.row, sticky=tk.W
-        )
+
+        text_len = len(text)
+        width = 15
+        if text_len > width:
+            width = text_len
+
+        ttk.Button(
+            self.root,
+            text=text,
+            command=cmd,
+            width=width
+        ).grid(
+            column=self.column,
+            row=self.row,
+            sticky=tk.W,
+            padx=5, pady=1)
         self.row += 1
 
 

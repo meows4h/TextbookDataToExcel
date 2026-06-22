@@ -8,6 +8,7 @@ import bs4
 import configparser
 import csv
 from helpers.utilities import get_state, get_directory
+from helpers.helpergui import AddedGUI
 
 
 def str_clean(str):
@@ -85,7 +86,7 @@ def get_row_price(driver, row, link):
     return price
 
 
-def pull_textbook_data():
+def pull_textbook_data(gui=False):
     """Pulls textbook data from the given webpage and returns
     the output table."""
 
@@ -128,74 +129,43 @@ def pull_textbook_data():
     html_content = driver.page_source
     table_export = []
     curr_page = bs4.BeautifulSoup(html_content, "lxml")
-    terms = [custom_term]
+    terms = [   ]
 
-    # asking the user which terms they would wish to pull
-    # while True:
-    #     try:
-    #         term_int = int(
-    #             input(
-    #                 "Which terms would you like to pull?\n 1 - All\n 2 - Most Recent\n 3 - Custom (Defined in Code)\n Select one: "
-    #             )
-    #         )
-    #         if 0 < term_int < 4:
-    #             break
-    #         else:
-    #             raise TypeError
-    #     except TypeError:
-    #         print("Please select one of the correct options.\n")
-    #         continue
-    #     except ValueError:
-    #         print("Please select one of the correct options.\n")
-    #         continue
+    # if gui true, overwrite custom config
+    if gui:
 
-    # gets all the term values and their names
-    # if term_int == 1:
-    #     for td in curr_page.find_all("td"):
+        chosen_term = None
+        def set_term_val(value):
+            nonlocal chosen_term
+            chosen_term = value
 
-    #         if skip_check == 0:
-    #             skip_check = 1
-    #             continue
+        gui_terms = []
+        skip_check = 0
+        for td in curr_page.find_all("td"):
+            # skipping other td
+            if skip_check == 0:
+                skip_check = 1
+                continue
+            skip_check = 0
+            for option in td.find_all("option"):
+                # skipping non option
+                if skip_check == 0:
+                    skip_check = 1
+                    continue
+                gui_terms.append([option["value"], option.text])
+            break
 
-    #         skip_check = 0
+        gui_window = AddedGUI(title="Term Choice")
+        gui_window.add_label("Which term would you like to collect data for?")
+        for choice in gui_terms:
+            gui_window.add_button(f"{choice[1]}", lambda c=choice: [set_term_val(c), gui_window.root.destroy()])
+            print(choice[1])
+            print(choice)
+        gui_window.root.mainloop()
 
-    #         for option in td.find_all("option"):
-
-    #             if skip_check == 0:
-    #                 skip_check = 1
-    #                 continue
-
-    #             terms.append([option["value"], option.text])
-
-    # if term_int == 2:
-
-    #     for td in curr_page.find_all("td"):
-
-    #         if skip_check == 0:
-    #             skip_check = 1
-    #             continue
-
-    #         skip_check = 0
-
-    #         for option in td.find_all("option"):
-
-    #             if skip_check == 0:
-    #                 skip_check = 1
-    #                 continue
-
-    #             terms.append([option["value"], option.text])
-    #             break
-
-    #         break
-
-    # if term_int == 3:
-
-    #     # to add a custom term, please insert a 'terms.append()' function here
-    #     # the list to append takes the format of [value, "name"]
-    #     # the value can be found within the HTML of the page, in the option
-    #     # element of the term you wish to extract
-
-    #     terms.append(custom_term)
+        print("this has been passed")
+        terms = [chosen_term]
+        print(terms)
 
     print(f"Searching through set terms: {terms}")
 
