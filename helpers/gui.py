@@ -19,7 +19,7 @@ class GUI:
         self.cfg.read(self.cfg_path)
 
         self.root = root
-        self.root.title("App Title")
+        self.root.title("Textbook Data Processing")
         self.root.minsize(600, 280)
         self.root.maxsize(1680, 540)
         self.tabControl = ttk.Notebook(self.root)
@@ -62,44 +62,56 @@ class GUI:
     # building the main tab
     def build_main(self):
         self.reset_main()
+        button_width = 20
+        ttk.Label(self.main_tab,
+            text="Welcome! What would you like to do?").grid(
+            column=0,
+            row=0,
+            sticky=tk.W)
         ttk.Button(
             self.main_tab,
             text="New Sheet",
+            width=button_width,
             command=lambda: self.start_mode(
                 flag=1)).grid(
             column=0,
-            row=0,
-            sticky=tk.E)
+            row=1,
+            sticky=tk.W)
         ttk.Button(
             self.main_tab,
-            text="CSV",
+            text="Gather Data",
+            width=button_width,
             command=lambda: self.start_mode(
                 flag=2)).grid(
             column=0,
-            row=1,
-            sticky=tk.E)
+            row=2,
+            sticky=tk.W)
         ttk.Button(
             self.main_tab,
-            text="Email",
+            text="Create Emails",
+            width=button_width,
             command=lambda: self.start_mode(
                 flag=3)).grid(
             column=0,
-            row=2,
-            sticky=tk.E)
+            row=3,
+            sticky=tk.W)
         ttk.Button(
             self.main_tab,
-            text="Update",
+            text="Sheet Update",
+            width=button_width,
             command=lambda: self.start_mode(
                 flag=4)).grid(
             column=0,
-            row=3,
-            sticky=tk.E)
+            row=4,
+            rowspan=2,
+            sticky=tk.W)
 
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
-        self.main_tab.columnconfigure(2, weight=1)
-        for child in self.main_tab.winfo_children():
+        self.main_tab.columnconfigure(0, weight=1)
+        for idx, child in enumerate(self.main_tab.winfo_children()):
             child.grid_configure(padx=5, pady=5)
+            # self.main_tab.rowconfigure(idx, weight=100)
 
     def build_options(self):
         # probably want to make some tool to make the reading the bookstore numbers and
@@ -310,7 +322,7 @@ class GUI:
         self.build_main()
 
     def start_bookstore_csv(self):
-        bookstore_thread = threading.Thread(target=pull_textbook_data)
+        bookstore_thread = threading.Thread(target=lambda: pull_textbook_data(gui=True))
         bookstore_thread.start()
         self.build_main()
 

@@ -189,19 +189,36 @@ def grabber_gui(textbook_table, email_dict):
         nonlocal email_store
         email_store = value
 
+    def run_process_ui():
+        nonlocal check_state
+        gui_window = AddedGUI(title="Email Grabber Helper")
+        gui_window.add_label("Waiting for email composition window.")
+        gui_window.add_button("Okay I did that", gui_window.root.destroy)
+        gui_window.root.mainloop()
+        check_state = False
+
     def run_process_suggestion(box):
-        res_list = []
-        html = box.get_attribute("innerHTML")
-        lxml = bs4.BeautifulSoup(html, "lxml")
+        while True:
+            try:
+                res_list = []
+                html = box.get_attribute("innerHTML")
+                lxml = bs4.BeautifulSoup(html, "lxml")
 
-        li_list = lxml.find_all("li")
+                li_list = lxml.find_all("li")
 
-        for li in li_list:
-            list_info = li.find_all("span", class_="MwdHX")
-            if list_info:
-                res_list.append(list_info[1].get_text())
-        
-        return res_list
+                for li in li_list:
+                    list_info = li.find_all("span", class_="Umn8G")
+                    if list_info:
+                        res_list.append(list_info[0].get_text())
+                
+                return res_list
+            except:
+                # gui_window = AddedGUI(title="Email Grabber Helper")
+                # gui_window.add_label(f"No suggestion box. Please search for the email belonging to {name}.")
+                # gui_window.add_button("Okay I did that", gui_window.root.destroy)
+                # gui_window.root.mainloop()
+                print("Error hit in processing suggestion box.")
+                time.sleep(1)
 
     def run_check_ui():
         nonlocal check_state
@@ -231,9 +248,9 @@ def grabber_gui(textbook_table, email_dict):
         gui_window = AddedGUI(title="Email Grabber Helper")
         gui_window.add_label(f"Which email is correct for {base_name}?")
         for name in name_list:
-            gui_window.add_button(f"{name}", lambda: [set_email_store(name), gui_window.root.destroy()])
+            gui_window.add_button(f"{name}", lambda n=name: [set_email_store(n), gui_window.root.destroy()])
         gui_window.add_button("No Email", lambda: [set_email_store("NO EMAIL"), gui_window.root.destroy()])
-        gui_window.add_button("None of These", lambda: [set_email_store(""), gui_window.root.destroy()])
+        gui_window.add_button("Refresh Options", lambda: [set_email_store(""), gui_window.root.destroy()])
         gui_window.root.mainloop()
         if await_suggest == 0:
             await_suggest = 1
@@ -254,6 +271,7 @@ def grabber_gui(textbook_table, email_dict):
                     ui_thread = threading.Thread(target=run_check_ui)
                     ui_thread.start()
         
+        email_store = ""
         name = name.replace(",", "")
         name = name.strip()
         base_name = name
@@ -264,10 +282,9 @@ def grabber_gui(textbook_table, email_dict):
         # can functionize the temp name portions?
         state = 1
         while True:
-            time.sleep(1)
+            time.sleep(0.55)
             try:
-                # TODO left off with working out the quirks of this system...
-                # maybe not use webdriverwait? it takes so much longer
+                # TODO trying to implement webdriverwait
                 # suggestion_box = WebDriverWait(driver, 3).until(
                 #     EC.presence_of_element_located((By.CLASS_NAME, "ms-FloatingSuggestionsList-container"))
                 # )
@@ -284,15 +301,6 @@ def grabber_gui(textbook_table, email_dict):
                 # i dont think running this as a thread is necessary?
                 # to be honest if i reworked this, change these edge case functions that START ui
                 # functions to be normal functions, it's just things INSIDE ui need threads
-                # suggest_ui_thread = threading.Thread(target=lambda: run_suggestion_ui(emails, base_name))
-                # suggest_ui_thread.start()
-                # while await_suggest == 0:
-                #     continue
-                # if await_suggest == 1:
-                #     if email_store == "":
-                #         raise ValueError("none of them")
-                #     elif email_store:
-                #         return email_store
                 run_suggestion_ui(emails, base_name)
                 if email_store == "":
                     raise ValueError("none of them")
@@ -316,15 +324,16 @@ def grabber_gui(textbook_table, email_dict):
                     to_box.clear()
                     to_box.send_keys(temp_name)
 
-                # manual input
-                # elif state >= 10:
-                #     await_suggest = 0
-                #     suggest_ui_thread = threading.Thread(target=lambda: run_suggestion_ui(base_name))
-                #     suggest_ui_thread.start()
-                #     while await_suggest == 0:
-                #         # time.sleep(1)
-                #         continue
-                #     state = 11
+                # padding out an extra cycle for more processing time
+                elif state == 10:
+                    state = 11
+                    continue
+
+                elif state >= 11:
+                    gui_window = AddedGUI(title="Email Grabber Helper")
+                    gui_window.add_label(f"No suggestion box. Please search for the email belonging to {base_name}.")
+                    gui_window.add_button("Okay I did that", gui_window.root.destroy)
+                    gui_window.root.mainloop()
 
             except StaleElementReferenceException as err:
                 print(err)
