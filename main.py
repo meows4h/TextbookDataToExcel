@@ -5,6 +5,11 @@ from helpers.modes import start_mode
 from helpers.gui import start_app
 from helpers.sheetmaker import make_excel_sheet
 
+# SHORT TERM TODO:
+# - MAIN INPUT FILE for emails, is supposed to be in MAIN not in HELPERS
+# - Email Grabber state update: the refresh button just iterates again ! that is bad!
+# - Adding the email language used for emails.py to the Options page
+
 # MID TERM TODO:
 # - Relook into fixing analytics data pulling
 # - Ensure OneSearch scope is correct and/or reassess the bookstore ISBN pulling
