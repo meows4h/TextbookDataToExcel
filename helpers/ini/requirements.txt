@@ -1,6 +1,0 @@
-pandas
-openpyxl
-bs4
-selenium
-lxml
-requests

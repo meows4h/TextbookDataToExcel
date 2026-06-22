@@ -208,8 +208,7 @@ def process_courses(book_list, headers, df):
     of Book objects, inserting the necessary columns into the dataframe."""
     max_len = get_max_courses(book_list)
     for idx in range(1, max_len + 1):
-        df.insert(
-            idx - 1, f"{headers[0].replace('$', f'{idx}')}", pd.Series([]))
+        df.insert(idx - 1, f"{headers[0].replace('$', f'{idx}')}", pd.Series([]))
 
     return max_len
 
@@ -294,8 +293,7 @@ def import_data(book_list, format, main, df):
                     # counting bnc copies and ensuring the rest are in Valley
                     # BIB
                     if book.analytics[mms_id]["Location"] == "Champinefu Lodge":
-                        bnc_copies += get_int(
-                            book.analytics[mms_id]["Copies"][kdx])
+                        bnc_copies += get_int(book.analytics[mms_id]["Copies"][kdx])
                     if book.analytics[mms_id]["Location"] != "Valley BIB":
                         continue
 
@@ -303,25 +301,27 @@ def import_data(book_list, format, main, df):
                     if phys_count >= 2:
                         continue
                     df.loc[row, main[f"PrintMMSId{phys_count + 1}"]] = mms_id
-                    df.loc[row, main[f"PrintLink{phys_count + 1}"]
-                           ] = book.analytics[mms_id]["Link"]
-                    df.loc[row, main[f"PrintCopies{phys_count + 1}"]
-                           ] = book.analytics[mms_id]["Copies"][kdx]
+                    df.loc[row, main[f"PrintLink{phys_count + 1}"]] = book.analytics[
+                        mms_id
+                    ]["Link"]
+                    df.loc[row, main[f"PrintCopies{phys_count + 1}"]] = book.analytics[
+                        mms_id
+                    ]["Copies"][kdx]
                     phys_count += 1
 
                 elif access == "Electronic":
                     df.loc[row, main["EbookMMSId"]] = mms_id
-                    df.loc[row, main["EbookLink"]
-                           ] = book.analytics[mms_id]["Link"]
-                    df.loc[row, main["EbookUsers"]
-                           ] = book.analytics[mms_id]["Users"][kdx]
-                    df.loc[row, main["EbookPlatform"]
-                           ] = book.analytics[mms_id]["Platform"]
+                    df.loc[row, main["EbookLink"]] = book.analytics[mms_id]["Link"]
+                    df.loc[row, main["EbookUsers"]] = book.analytics[mms_id]["Users"][
+                        kdx
+                    ]
+                    df.loc[row, main["EbookPlatform"]] = book.analytics[mms_id][
+                        "Platform"
+                    ]
 
                 elif access == "Audiobook":
                     df.loc[row, main["AudioMMSId"]] = mms_id
-                    df.loc[row, main["AudioLink"]
-                           ] = book.analytics[mms_id]["Link"]
+                    df.loc[row, main["AudioLink"]] = book.analytics[mms_id]["Link"]
 
                 if not cdl_state:
                     cdl_state = book.analytics[mms_id]["CDL"][kdx]
@@ -336,8 +336,7 @@ def import_data(book_list, format, main, df):
             df.loc[row, main["BNCCopies"]] = bnc_copies
 
         for jdx in range(1, len(book.isbns) + 1):
-            df.loc[row, main["ISBN"].replace(
-                "1", f"{jdx}")] = book.isbns[jdx - 1]
+            df.loc[row, main["ISBN"].replace("1", f"{jdx}")] = book.isbns[jdx - 1]
 
         campus_out = ""
         for num, jdx in enumerate(sorted(book.campuses)):
@@ -348,16 +347,17 @@ def import_data(book_list, format, main, df):
 
         course_order = get_max_index(book.sec_size)
         for num, jdx in enumerate(course_order):
-            df.loc[row, format[0].replace(
-                "$", f"{num + 1}")] = book.courses[jdx]
+            df.loc[row, format[0].replace("$", f"{num + 1}")] = book.courses[jdx]
             for iter, kdx in enumerate(book.sections[jdx]):
-                df.loc[row, get_replace_header(
-                    format[1], num + 1, iter + 1)] = kdx[0]
-                df.loc[row, get_replace_header(
-                    format[2], num + 1, iter + 1, "Instructor")] = kdx[1]
-                df.loc[row, get_replace_header(
-                    format[2], num + 1, iter + 1, "Email")] = kdx[2]
-                df.loc[row, get_replace_header(
-                    format[2], num + 1, iter + 1, "Enroll")] = kdx[3]
+                df.loc[row, get_replace_header(format[1], num + 1, iter + 1)] = kdx[0]
+                df.loc[
+                    row, get_replace_header(format[2], num + 1, iter + 1, "Instructor")
+                ] = kdx[1]
+                df.loc[
+                    row, get_replace_header(format[2], num + 1, iter + 1, "Email")
+                ] = kdx[2]
+                df.loc[
+                    row, get_replace_header(format[2], num + 1, iter + 1, "Enroll")
+                ] = kdx[3]
 
     return df

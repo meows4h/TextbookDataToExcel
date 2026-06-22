@@ -45,8 +45,7 @@ def make_excel_sheet(open_outlook=None, open_alma=None, gui_class=None):
         gui_use = False
 
     if open_outlook is None:
-        grabber_enabled = get_enabled(
-            "Log into Outlook and pull email values? (y/n): ")
+        grabber_enabled = get_enabled("Log into Outlook and pull email values? (y/n): ")
     else:
         grabber_enabled = open_outlook
     save_emails = get_state(grabber_cfg["Save"])
@@ -54,7 +53,8 @@ def make_excel_sheet(open_outlook=None, open_alma=None, gui_class=None):
 
     if open_alma is None:
         analytics_enabled = get_enabled(
-            "Log into Alma and collect analytics data? (y/n): ")
+            "Log into Alma and collect analytics data? (y/n): "
+        )
     else:
         analytics_enabled = open_alma
     save_analytics = get_state(analytics_cfg["Save"])
@@ -199,12 +199,10 @@ def make_excel_sheet(open_outlook=None, open_alma=None, gui_class=None):
         # cross reference with most recent winter sheet that is in use
         # can update book names off of primo
         if not pd.isna(isbn):
-            if f"{isbn}" in analytics_store and (
-                    analytics_enabled or import_ana):
+            if f"{isbn}" in analytics_store and (analytics_enabled or import_ana):
                 data = analytics_store[f"{isbn}"]["Data"]
             elif analytics_enabled:
-                data = process_analytics(
-                    analytics_driver, analytics_store, isbn)
+                data = process_analytics(analytics_driver, analytics_store, isbn)
                 analytics_store[f"{isbn}"] = {"Data": data}
 
         book_info = {
@@ -221,7 +219,7 @@ def make_excel_sheet(open_outlook=None, open_alma=None, gui_class=None):
             "Req": requirement,
             "RequiDate": requisition,
             "Comment": comment,
-            "Analytics": data
+            "Analytics": data,
         }
 
         book_list = process_book(book_list, book_info)

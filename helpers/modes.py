@@ -75,8 +75,7 @@ def update_mode():
     # full_config = configparser.ConfigParser()
     # full_config.read("config.ini")
     # sheet_name = full_config["Email"]["Sheetname"]
-    sheet_name = get_input(
-        text="Input which sheet is being updated (i.e. Spring26): ")
+    sheet_name = get_input(text="Input which sheet is being updated (i.e. Spring26): ")
 
     print("Select Update mode:")
     text = """1. Enrollment Data
@@ -173,9 +172,7 @@ def analytics_csv(full_config, textbk_path, pre_import=None):
         if not (isbn is None or pd.isna(isbn)):
             data = process_analytics(analytics_driver, isbn)
 
-            analytics_store[f"{isbn}"] = {
-                "Data": data
-            }
+            analytics_store[f"{isbn}"] = {"Data": data}
 
         # with how long this process takes and because I am running out of time
         # to work out better implementations (i.e. try / except error checking)
@@ -224,7 +221,8 @@ def enrollment_update(sheet_name, file_name=""):
 # this function is functional, but not complete
 def analytics_update(sheet_name, file_name=""):
     """Updates the excel sheet with data from the analytics csv file.
-       NOTE: It will **NOT** overwrite existing data due to protecting manual data entry."""
+    NOTE: It will **NOT** overwrite existing data due to protecting manual data entry.
+    """
     full_config = configparser.ConfigParser()
     full_config.read("config.ini")
     alma_config = full_config["Alma"]
@@ -259,13 +257,14 @@ def analytics_update(sheet_name, file_name=""):
 
             print(
                 f"header: {col_header}, cell: {
-                    cell.value}, isbn: {isbn_list}, print: {print_list}, elec: {electronic_list}")
+                    cell.value}, isbn: {isbn_list}, print: {print_list}, elec: {electronic_list}"
+            )
 
             if col_header == isbn_header:
                 idx += 1
                 isbn = cell.value
                 if isbn is not None:
-                    isbn = f'{isbn}'
+                    isbn = f"{isbn}"
                     isbn_list.append(isbn)
 
                 # check if it is in the data
@@ -291,7 +290,7 @@ def analytics_update(sheet_name, file_name=""):
                                     "Number": copies,
                                     "Link": link,
                                     "Year": year,
-                                    "MMS": mms_id
+                                    "MMS": mms_id,
                                 }
                                 print_list.append(temp)
 
@@ -303,7 +302,7 @@ def analytics_update(sheet_name, file_name=""):
                                     "Link": link,
                                     "Year": year,
                                     "CDL": cdl,
-                                    "MMS": mms_id
+                                    "MMS": mms_id,
                                 }
                                 electronic_list.append(temp)
 
@@ -412,14 +411,14 @@ Input (y/n): """
     while True:
         try:
             str_input = get_input(text=text)
-            if not (str_input == 'y' or str_input == 'n'):
+            if not (str_input == "y" or str_input == "n"):
                 raise ValueError("Incorrect input.")
             break
         except Exception as err:
             print(err)
 
-    if str_input == 'y':
+    if str_input == "y":
         importing = True
-    elif str_input == 'n':
+    elif str_input == "n":
         importing = False
     return importing
