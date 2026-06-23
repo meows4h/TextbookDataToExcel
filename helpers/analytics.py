@@ -29,21 +29,19 @@ WHERE
 """
 
 """
-SELECT
-   "Bibliographic Details"."Author" saw_0,
-   "Bibliographic Details"."Title" saw_1,
-   "Bibliographic Details"."ISBN" saw_2,
-   "Bibliographic Details"."Resource Type" saw_3,
-   "Bibliographic Details"."MMS Id" saw_4,
-   "Bibliographic Details"."Earliest Possible Publication Year" saw_5,
-   "Physical Item Details"."Material Type" saw_6,
-   "Physical Item Details"."Num of Items (In Repository)" saw_7,
-   "Holdings Details"."Holdings Lifecycle" saw_8,
-   "Holdings Details"."Suppressed from Discovery" saw_9,
-   "Edition Simplified"."Edition Simplified (Num)" saw_10
- FROM "Physical Items"
- WHERE
-"Bibliographic Details"."ISBN" LIKE '%9781478647690%'
+SELECT "Bibliographic Details"."Author" saw_0,
+"Bibliographic Details"."Earliest Possible Publication Year" saw_1,
+"Bibliographic Details"."Title" saw_2,
+"Bibliographic Details"."Publisher" saw_3,
+"Bibliographic Details"."MMS Id" saw_4,
+"Bibliographic Details"."ISBN" saw_5,
+"Bibliographic Details"."Edition" saw_6,
+"Bibliographic Details"."Material Type" saw_7,
+"Bibliographic Details"."Resource Type" saw_8,
+"Representation Access Rights"."Access Right Name" saw_9,
+"Representation Access Rights"."Access Right Desc" saw_10,
+"Edition Simplified"."Edition Simplified (Num)" saw_11,
+FROM "Digital Inventory" WHERE "Bibliographic Details"."ISBN" LIKE '%'
 """
 
 
