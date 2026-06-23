@@ -77,9 +77,12 @@ def get_directory(directory, config):
     return path
 
 
-def get_filepath(name):
+def get_filepath(name, home=True):
     curr_dir = os.path.dirname(__file__)
-    path = os.path.join(curr_dir, name)
+    if home:
+        path = os.path.join(curr_dir, "..", name)
+    else:
+        path = os.path.join(curr_dir, name)
     return path
 
 
