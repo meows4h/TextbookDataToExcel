@@ -25,12 +25,12 @@ class GUI:
         self.tabControl = ttk.Notebook(self.root)
 
         self.main_tab = ttk.Frame(self.tabControl, padding=(3, 3, 12, 12))
-        self.options_tab = ttk.Frame(self.tabControl, padding=(3, 3, 12, 12))
+        self.emails_tab = ttk.Frame(self.tabControl, padding=(3, 3, 12, 12), borderwidth=5)
         self.headers_tab = ttk.Frame(self.tabControl, padding=(3, 3, 12, 12))
         self.advanced_tab = ttk.Frame(self.tabControl, padding=(3, 3, 12, 12))
 
         self.tabControl.add(self.main_tab, text="Main")
-        self.tabControl.add(self.options_tab, text="Email Text")
+        self.tabControl.add(self.emails_tab, text="Email Text")
         self.tabControl.add(self.headers_tab, text="Header Names")
         self.tabControl.add(self.advanced_tab, text="Adv. Options")
         self.tabControl.pack(expand=10, fill="both")
@@ -117,28 +117,26 @@ class GUI:
         cfgdir = "helpers/ini/emails.ini"
         temp_cfg = configparser.ConfigParser()
         temp_cfg.read(cfgdir)
-        max_rows = 8
-        col_num = -1
+        max_rows = 0
         email_text = temp_cfg["Main"]
+        self.emails_tab.columnconfigure(0, minsize=100)
+        # self.emails_tab.columnconfigure(1, minsize=240)
         for idx, key in enumerate(email_text):
-            curr_row = idx % max_rows
-            if curr_row == 0:
-                col_num += 1
-                self.options_tab.columnconfigure(col_num, minsize=240)
-            ttk.Label(self.options_tab, text=key).grid(
-                column=col_num, row=curr_row, sticky=tk.W
+            max_rows = idx
+            ttk.Label(self.emails_tab, text=key, width=10).grid(
+                column=0, row=idx, sticky=tk.W, padx=0, ipadx=0
             )
             self.email_set[key] = tk.StringVar()
             self.email_set[key].set(email_text[key])
-            ttk.Entry(self.options_tab, textvariable=self.email_set[key]).grid(
-                column=col_num, row=curr_row, padx=40, sticky=tk.E
+            ttk.Entry(self.emails_tab, textvariable=self.email_set[key], width=120).grid(
+                column=1, row=idx, columnspan=4, sticky=tk.W
             )
         ttk.Button(
-            self.options_tab, text="Save to File", command=self.write_emails
+            self.emails_tab, text="Save to File", command=self.write_emails
         ).grid(column=0, row=max_rows + 3, sticky=tk.W)
-        ttk.Label(
-            self.options_tab, text="Widen the window to see all the options!"
-        ).grid(column=0, row=max_rows + 4, sticky=tk.W)
+        # ttk.Label(
+        #     self.emails_tab, text="Widen the window to see all the options!"
+        # ).grid(column=0, row=max_rows + 4, sticky=tk.W)
 
     # building the headers tab
     def build_headers(self):

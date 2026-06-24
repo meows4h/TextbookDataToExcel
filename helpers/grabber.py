@@ -222,7 +222,6 @@ def grabber_gui(textbook_table, email_dict):
 
     def run_check_web():
         nonlocal check_state
-        nonlocal driver
         break_check = False
         while not break_check:
             time.sleep(5)
@@ -248,7 +247,6 @@ def grabber_gui(textbook_table, email_dict):
             await_suggest = 1
 
     def run_get_email(name):
-        nonlocal driver
         nonlocal check_state
         nonlocal await_suggest
         break_check = False

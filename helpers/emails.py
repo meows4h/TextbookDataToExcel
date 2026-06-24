@@ -85,6 +85,10 @@ def create_email_excel(input_sheet=None, file_name=""):
     full_config.read("config.ini")
     email_config = full_config["Email"]
 
+    text_config = configparser.ConfigParser()
+    text_config.read("helpers/ini/emails.ini")
+    text_config = text_config["Main"]
+
     if file_name == "":
         input_path = get_directory("Input", email_config)
     else:
@@ -259,13 +263,15 @@ def create_email_excel(input_sheet=None, file_name=""):
                 email_str += "<br>"
 
             course = get_split_course(course_code)
-            email_str += f'<b>{
-                course[0]} {
-                course[1]}</b><br>Students can find all library materials by <a href="https://search.library.oregonstate.edu/discovery/search?query=any,contains,{
-                course[0]}%20{
-                    course[1]}&tab=CourseReserves&search_scope=CourseReserves&vid=01ALLIANCE_OSU:OSU&lang=en&offset=0">searching course reserves for {
-                        course[0]} {
-                            course[1]}</a>.<br><ul>'
+            email_str += "<br>"
+            email_str += text_config["Link"].replace("[0]", course[0]).replace("[1]", course[1])
+            # email_str += f'<b>{
+            #     course[0]} {
+            #     course[1]}</b><br>Students can find all library materials by <a href="https://search.library.oregonstate.edu/discovery/search?query=any,contains,{
+            #     course[0]}%20{
+            #         course[1]}&tab=CourseReserves&search_scope=CourseReserves&vid=01ALLIANCE_OSU:OSU&lang=en&offset=0">searching course reserves for {
+            #             course[0]} {
+            #                 course[1]}</a>.<br><ul>'
 
             # TODO
             # combining class codes ?
@@ -377,15 +383,21 @@ def create_email_excel(input_sheet=None, file_name=""):
         # Scanned was updated with new language according to Pre-Purchasing Email Notification Doc
         # Ebook language was also added according to same doc mentioned above
         if scanned_appear:
-            email_str += '<br>Scanned books are first come, first served, for one hour at a time and use a waitlist. There is no limit to the number of renewals if no one is in the waitlist. If you would like to increase the number of simultaneous users, you may provide additional print copies for us to sequester. For every print copy we sequester, we can allow one online user in accordance with <a href="https://www.controlleddigitallending.org/">controlled digital lending</a> principles.'
+            email_str += "<br>"
+            email_str += text_config["scanned"]
+            # email_str += '<br>Scanned books are first come, first served, for one hour at a time and use a waitlist. There is no limit to the number of renewals if no one is in the waitlist. If you would like to increase the number of simultaneous users, you may provide additional print copies for us to sequester. For every print copy we sequester, we can allow one online user in accordance with <a href="https://www.controlleddigitallending.org/">controlled digital lending</a> principles.'
         if scanned_appear and physical_appear:
             email_str += "<br>"
         if physical_appear:
-            email_str += "<br>Physical copies are available for checkout at the Borrowing & Information desk for three hours at a time."
+            email_str += "<br>"
+            email_str += text_config["physical"]
+            # email_str += "<br>Physical copies are available for checkout at the Borrowing & Information desk for three hours at a time."
         if (scanned_appear and ebook_appear) or (physical_appear and ebook_appear):
             email_str += "<br>"
         if ebook_appear:
-            email_str += "<br>When purchasing ebooks, we prioritize unlimited-user licenses, but these are not always available."
+            email_str += "<br>"
+            email_str += text_config["ebook"]
+            # email_str += "<br>When purchasing ebooks, we prioritize unlimited-user licenses, but these are not always available."
 
         final_data["Book Output"].append(email_str)
 
