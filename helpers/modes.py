@@ -15,11 +15,6 @@ from helpers.analytics import export_analytics, import_analytics
 from helpers.analytics import process_analytics
 from helpers.emails import create_email_excel
 
-# 5/16/26 : this file (almost) purely exists for the original main.py CLI script. the TKinter implementation
-# will not be using these functions or methods ; leaving in case of
-# debugging or other features
-
-# older :
 # this whole file PROBABLY could be made more or less obsolete with some refactoring!
 # basically just hardcoded some values to always run with, or certain flags rather than pulling from config
 # most of these are either similar, exact, or slimmed down versions of their original workflows, just put into a single function

@@ -16,7 +16,6 @@ from helpers.grabber import email_exporter, email_importer
 from helpers.analytics import setup_analytics
 from helpers.analytics import export_analytics, import_analytics
 from helpers.analytics import process_analytics
-from temp import start_thread
 
 
 def make_excel_sheet(open_outlook=None, open_alma=None, gui_class=None):

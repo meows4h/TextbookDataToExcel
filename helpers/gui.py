@@ -30,7 +30,7 @@ class GUI:
         self.advanced_tab = ttk.Frame(self.tabControl, padding=(3, 3, 12, 12))
 
         self.tabControl.add(self.main_tab, text="Main")
-        self.tabControl.add(self.options_tab, text="Options")
+        self.tabControl.add(self.options_tab, text="Email Text")
         self.tabControl.add(self.headers_tab, text="Header Names")
         self.tabControl.add(self.advanced_tab, text="Adv. Options")
         self.tabControl.pack(expand=10, fill="both")
@@ -38,9 +38,10 @@ class GUI:
         self.adv_set = {}
         self.opt_set = {}
         self.header_set = {}
+        self.email_set = {}
 
         self.build_main()
-        self.build_options()
+        self.build_emails()
         self.build_advanced()
         self.build_headers()
 
@@ -108,14 +109,36 @@ class GUI:
             child.grid_configure(padx=5, pady=5)
             # self.main_tab.rowconfigure(idx, weight=100)
 
-    def build_options(self):
+    def build_emails(self):
         # probably want to make some tool to make the reading the bookstore numbers and
         # terms easier + easier to modify
         # modifying the output file name
         # otherwise unsure, maybe checkboxes for this?
+        cfgdir = "helpers/ini/emails.ini"
+        temp_cfg = configparser.ConfigParser()
+        temp_cfg.read(cfgdir)
+        max_rows = 8
+        col_num = -1
+        email_text = temp_cfg["Main"]
+        for idx, key in enumerate(email_text):
+            curr_row = idx % max_rows
+            if curr_row == 0:
+                col_num += 1
+                self.options_tab.columnconfigure(col_num, minsize=240)
+            ttk.Label(self.options_tab, text=key).grid(
+                column=col_num, row=curr_row, sticky=tk.W
+            )
+            self.email_set[key] = tk.StringVar()
+            self.email_set[key].set(email_text[key])
+            ttk.Entry(self.options_tab, textvariable=self.email_set[key]).grid(
+                column=col_num, row=curr_row, padx=40, sticky=tk.E
+            )
+        ttk.Button(
+            self.options_tab, text="Save to File", command=self.write_emails
+        ).grid(column=0, row=max_rows + 3, sticky=tk.W)
         ttk.Label(
-            self.options_tab, text="Putting some easier to modify options here later."
-        ).grid(column=0, row=0, sticky=tk.W)
+            self.options_tab, text="Widen the window to see all the options!"
+        ).grid(column=0, row=max_rows + 4, sticky=tk.W)
 
     # building the headers tab
     def build_headers(self):
@@ -394,6 +417,15 @@ class GUI:
         temp_cfg.read(cfgdir)
         for key in temp_cfg["Names"]:
             temp_cfg["Names"][key] = self.header_set[key].get()
+        with open(cfgdir, "w") as cfgfile:
+            temp_cfg.write(cfgfile)
+
+    def write_emails(self):
+        cfgdir = "helpers/ini/emails.ini"
+        temp_cfg = configparser.ConfigParser()
+        temp_cfg.read(cfgdir)
+        for key in temp_cfg["Main"]:
+            temp_cfg["Main"][key] = self.email_set[key].get()
         with open(cfgdir, "w") as cfgfile:
             temp_cfg.write(cfgfile)
 

@@ -377,7 +377,7 @@ def create_email_excel(input_sheet=None, file_name=""):
         # Scanned was updated with new language according to Pre-Purchasing Email Notification Doc
         # Ebook language was also added according to same doc mentioned above
         if scanned_appear:
-            email_str += '<br>Scanned books are first come, first serve, for one hour at a time and use a waitlist. There is no limit to the number of renewals if no one is in the waitlist. If you would like to increase the number of simultaneous users, you may provide additional print copies for us to sequester. For every print copy we sequester, we can allow one online user in accordance with <a href="https://www.controlleddigitallending.org/">controlled digital lending</a> principles.'
+            email_str += '<br>Scanned books are first come, first served, for one hour at a time and use a waitlist. There is no limit to the number of renewals if no one is in the waitlist. If you would like to increase the number of simultaneous users, you may provide additional print copies for us to sequester. For every print copy we sequester, we can allow one online user in accordance with <a href="https://www.controlleddigitallending.org/">controlled digital lending</a> principles.'
         if scanned_appear and physical_appear:
             email_str += "<br>"
         if physical_appear:
