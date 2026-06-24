@@ -5,8 +5,16 @@ from helpers.modes import start_mode
 from helpers.gui import start_app
 from helpers.sheetmaker import make_excel_sheet
 
+# General TODO:
+# finish modes implementation for enrollment update
+# finish isbn updating / onesearch checking
+# test the implementation for pressing refresh early on the gui email grabber
+# fully finish documentation.md
+# finish alma analytics update so that it functions properly
+# implement email text updating with better gui
+# add images to readme
+
 # SHORT TERM TODO:
-# - MAIN INPUT FILE for emails, is supposed to be in MAIN not in HELPERS
 # - Email Grabber state update: the refresh button just iterates again ! that is bad!
 # - Adding the email language used for emails.py to the Options page
 
@@ -18,9 +26,6 @@ from helpers.sheetmaker import make_excel_sheet
 # BIG PICTURE TODO:
 # - Adding prices from the bookstore site into the bookstore information!
 # - Double check back over all the overdrive books among other ebook sources!
-# - Finish GUI implementation (AND multithreading)
-# - Finish README and Documentation
-# - Improve scraping efficiency and looking up better methods ; Multiprocessing! ; Better SQL Queries
 # - Safe guarding for error checking if extra time
 
 # look at ISBN: 9781478647690 for verifying material type? 19 copies

@@ -295,6 +295,9 @@ def grabber_gui(textbook_table, email_dict):
                 # functions to be normal functions, it's just things INSIDE ui need threads
                 run_suggestion_ui(emails, base_name)
                 if email_store == "":
+                    # TODO
+                    # if there is a problem with refreshing, double check this
+                    state = 10
                     raise ValueError("none of them")
                 elif email_store:
                     return email_store
@@ -323,8 +326,10 @@ def grabber_gui(textbook_table, email_dict):
 
                 elif state >= 11:
                     gui_window = AddedGUI(title="Email Grabber Helper")
-                    gui_window.add_label(f"No suggestion box. Please search for the email belonging to {base_name}.")
-                    gui_window.add_button("Okay I did that", gui_window.root.destroy)
+                    gui_window.add_label(f"No suggestion box found.")
+                    gui_window.add_label(f"Please search for the email belonging to {base_name}.")
+                    gui_window.add_label(f"(If there still is one, that's okay! Just press Done)")
+                    gui_window.add_button("Done", gui_window.root.destroy)
                     gui_window.root.mainloop()
 
             except StaleElementReferenceException as err:
