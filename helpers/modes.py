@@ -117,17 +117,19 @@ def emails_csv(full_config, textbk_path, pre_import=None):
                 email = emails[f"{instructor}"]
             else:
                 email = get_email(instructor, grabber_driver)
-                emails[f'{instructor}'] = email
+                emails[f"{instructor}"] = email
                 print(email)
             # exporting after each case to ensure that crashes doesnt lead to data
             # loss
             email_exporter(emails_path, emails)
-        
+
         email_exporter(emails_path, emails)
-    
+
     # GUI implementation
     else:
-        gui_thread = threading.Thread(target=lambda: grabber_gui(textbook_table, emails))
+        gui_thread = threading.Thread(
+            target=lambda: grabber_gui(textbook_table, emails)
+        )
         gui_thread.start()
 
 

@@ -25,7 +25,9 @@ class GUI:
         self.tabControl = ttk.Notebook(self.root)
 
         self.main_tab = ttk.Frame(self.tabControl, padding=(3, 3, 12, 12))
-        self.emails_tab = ttk.Frame(self.tabControl, padding=(3, 3, 12, 12), borderwidth=5)
+        self.emails_tab = ttk.Frame(
+            self.tabControl, padding=(3, 3, 12, 12), borderwidth=5
+        )
         self.headers_tab = ttk.Frame(self.tabControl, padding=(3, 3, 12, 12))
         self.advanced_tab = ttk.Frame(self.tabControl, padding=(3, 3, 12, 12))
 
@@ -59,48 +61,33 @@ class GUI:
     def build_main(self):
         self.reset_main()
         button_width = 20
-        ttk.Label(self.main_tab,
-            text="Welcome! What would you like to do?").grid(
-            column=0,
-            row=0,
-            sticky=tk.W)
+        ttk.Label(self.main_tab, text="Welcome! What would you like to do?").grid(
+            column=0, row=0, sticky=tk.W
+        )
         ttk.Button(
             self.main_tab,
             text="New Sheet",
             width=button_width,
-            command=lambda: self.start_mode(
-                flag=1)).grid(
-            column=0,
-            row=1,
-            sticky=tk.W)
+            command=lambda: self.start_mode(flag=1),
+        ).grid(column=0, row=1, sticky=tk.W)
         ttk.Button(
             self.main_tab,
             text="Gather Data",
             width=button_width,
-            command=lambda: self.start_mode(
-                flag=2)).grid(
-            column=0,
-            row=2,
-            sticky=tk.W)
+            command=lambda: self.start_mode(flag=2),
+        ).grid(column=0, row=2, sticky=tk.W)
         ttk.Button(
             self.main_tab,
             text="Create Emails",
             width=button_width,
-            command=lambda: self.start_mode(
-                flag=3)).grid(
-            column=0,
-            row=3,
-            sticky=tk.W)
+            command=lambda: self.start_mode(flag=3),
+        ).grid(column=0, row=3, sticky=tk.W)
         ttk.Button(
             self.main_tab,
             text="Sheet Update",
             width=button_width,
-            command=lambda: self.start_mode(
-                flag=4)).grid(
-            column=0,
-            row=4,
-            rowspan=2,
-            sticky=tk.W)
+            command=lambda: self.start_mode(flag=4),
+        ).grid(column=0, row=4, rowspan=2, sticky=tk.W)
 
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
@@ -128,9 +115,9 @@ class GUI:
             )
             self.email_set[key] = tk.StringVar()
             self.email_set[key].set(email_text[key])
-            ttk.Entry(self.emails_tab, textvariable=self.email_set[key], width=120).grid(
-                column=1, row=idx, columnspan=4, sticky=tk.W
-            )
+            ttk.Entry(
+                self.emails_tab, textvariable=self.email_set[key], width=120
+            ).grid(column=1, row=idx, columnspan=4, sticky=tk.W)
         ttk.Button(
             self.emails_tab, text="Save to File", command=self.write_emails
         ).grid(column=0, row=max_rows + 3, sticky=tk.W)
@@ -239,38 +226,25 @@ class GUI:
     def build_import_csv(self, yes_cmd, no_cmd):
         self.reset_main()
         locals_dict = {"self": self}
-        ttk.Label(
-            self.main_tab,
-            text="Import previous information?").grid(
-            column=0,
-            row=0,
-            sticky=tk.W)
+        ttk.Label(self.main_tab, text="Import previous information?").grid(
+            column=0, row=0, sticky=tk.W
+        )
         ttk.Button(
-            self.main_tab,
-            text="Yes",
-            command=lambda: exec(yes_cmd, {}, locals_dict)).grid(
-            column=0,
-            row=1,
-            sticky=tk.W)
+            self.main_tab, text="Yes", command=lambda: exec(yes_cmd, {}, locals_dict)
+        ).grid(column=0, row=1, sticky=tk.W)
         ttk.Button(
-            self.main_tab,
-            text="No",
-            command=lambda: exec(no_cmd, {}, locals_dict)).grid(
-            column=0,
-            row=2,
-            sticky=tk.W)
+            self.main_tab, text="No", command=lambda: exec(no_cmd, {}, locals_dict)
+        ).grid(column=0, row=2, sticky=tk.W)
         ttk.Button(
-            self.main_tab,
-            text="Go Back",
-            command=lambda: self.start_mode(flag=2)).grid(
-            column=0,
-            row=5,
-            sticky=tk.W)
+            self.main_tab, text="Go Back", command=lambda: self.start_mode(flag=2)
+        ).grid(column=0, row=5, sticky=tk.W)
 
     def start_analytics_csv(self, import_csv):
         bookstore_cfg = self.cfg["Textbook"]
         textbk_path = get_directory("Save", bookstore_cfg)
-        analytics_thread = threading.Thread(target=lambda: analytics_csv(self.cfg, textbk_path, import_csv))
+        analytics_thread = threading.Thread(
+            target=lambda: analytics_csv(self.cfg, textbk_path, import_csv)
+        )
         analytics_thread.start()
         self.build_main()
 
@@ -282,7 +256,9 @@ class GUI:
     def start_grabber_csv(self, import_csv):
         bookstore_cfg = self.cfg["Textbook"]
         textbk_path = get_directory("Save", bookstore_cfg)
-        grabber_thread = threading.Thread(target=lambda: emails_csv(self.cfg, textbk_path, import_csv))
+        grabber_thread = threading.Thread(
+            target=lambda: emails_csv(self.cfg, textbk_path, import_csv)
+        )
         grabber_thread.start()
         self.build_main()
 
@@ -297,39 +273,28 @@ class GUI:
         # csv update
         elif kwargs["flag"] == 2:
             ttk.Label(
-                self.main_tab,
-                text="What CSV file would you like to update?").grid(
-                column=0,
-                row=0,
-                sticky=tk.W)
+                self.main_tab, text="What CSV file would you like to update?"
+            ).grid(column=0, row=0, sticky=tk.W)
             ttk.Button(
                 self.main_tab,
                 text="Email Data",
-                command=lambda: self.build_import_csv("self.start_grabber_csv(True)", "self.start_grabber_csv(False)")).grid(
-                column=0,
-                row=1,
-                sticky=tk.W)
+                command=lambda: self.build_import_csv(
+                    "self.start_grabber_csv(True)", "self.start_grabber_csv(False)"
+                ),
+            ).grid(column=0, row=1, sticky=tk.W)
             ttk.Button(
-                self.main_tab,
-                text="Bookstore Data",
-                command=self.start_bookstore_csv).grid(
-                column=0,
-                row=2,
-                sticky=tk.W)
+                self.main_tab, text="Bookstore Data", command=self.start_bookstore_csv
+            ).grid(column=0, row=2, sticky=tk.W)
             ttk.Button(
                 self.main_tab,
                 text="Analytics Data",
-                command=lambda: self.build_import_csv("self.start_analytics_csv(True)", "self.start_analytics_csv(False)")).grid(
-                column=0,
-                row=3,
-                sticky=tk.W)
-            ttk.Button(
-                self.main_tab,
-                text="Go Back",
-                command=self.build_main).grid(
-                column=0,
-                row=5,
-                sticky=tk.W)
+                command=lambda: self.build_import_csv(
+                    "self.start_analytics_csv(True)", "self.start_analytics_csv(False)"
+                ),
+            ).grid(column=0, row=3, sticky=tk.W)
+            ttk.Button(self.main_tab, text="Go Back", command=self.build_main).grid(
+                column=0, row=5, sticky=tk.W
+            )
 
         # email export
         elif kwargs["flag"] == 3:

@@ -34,16 +34,9 @@ class AddedGUI:
         if text_len > width:
             width = text_len
 
-        ttk.Button(
-            self.root,
-            text=text,
-            command=cmd,
-            width=width
-        ).grid(
-            column=self.column,
-            row=self.row,
-            sticky=tk.W,
-            padx=5, pady=1)
+        ttk.Button(self.root, text=text, command=cmd, width=width).grid(
+            column=self.column, row=self.row, sticky=tk.W, padx=5, pady=1
+        )
         self.row += 1
 
 
