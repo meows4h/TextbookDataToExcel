@@ -181,6 +181,8 @@ def setup_grabber():
 
 
 def grabber_gui(textbook_table, email_dict):
+    """This functions similar to the CLI component of the Outlook Email Grabber,
+       but is more self contained to keep it all in one spot with threads."""
     check_state = False
     email_store = ""
     driver = webdriver.Chrome()
@@ -205,12 +207,10 @@ def grabber_gui(textbook_table, email_dict):
 
                 return res_list
             except:
-                # gui_window = AddedGUI(title="Email Grabber Helper")
-                # gui_window.add_label(f"No suggestion box. Please search for the email belonging to {name}.")
-                # gui_window.add_button("Okay I did that", gui_window.root.destroy)
-                # gui_window.root.mainloop()
+                # TODO
+                # check if this fail requirement ever gets met
                 print("Error hit in processing suggestion box.")
-                time.sleep(1)
+                time.sleep(0.5)
 
     def run_check_ui():
         nonlocal check_state

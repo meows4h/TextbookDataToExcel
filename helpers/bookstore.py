@@ -12,7 +12,7 @@ from helpers.helpergui import AddedGUI
 
 
 def str_clean(str):
-    """"""
+    """Removes special characters and whitespace from a string."""
     new_str = str.replace("&nbsp;", "")
     new_str = new_str.replace("  ", "")
     new_str = new_str.replace("\t", "")
@@ -21,7 +21,7 @@ def str_clean(str):
 
 
 def get_page_soup(driver, url):
-    """"""
+    """Pulls the current page HTML into a more workable format."""
     driver.get(url)
     html_content = driver.page_source
     page = bs4.BeautifulSoup(html_content, "lxml")
@@ -29,7 +29,7 @@ def get_page_soup(driver, url):
 
 
 def get_link(link, term, subject, code, section):
-    """"""
+    """Function to replace some of the template words to help with modularity."""
     link = link.replace("TERM", f"{term}")
     link = link.replace("SUBJECT", f"{subject}")
     link = link.replace("CODE", f"{code}")
