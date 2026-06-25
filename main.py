@@ -8,15 +8,9 @@ from helpers.sheetmaker import make_excel_sheet
 # General TODO:
 # finish modes implementation for enrollment update
 # finish isbn updating / onesearch checking
-# test the implementation for pressing refresh early on the gui email grabber
 # fully finish documentation.md
 # finish alma analytics update so that it functions properly
-# implement email text updating with better gui
 # add images to readme
-
-# SHORT TERM TODO:
-# - Email Grabber state update: the refresh button just iterates again ! that is bad!
-# - Adding the email language used for emails.py to the Options page
 
 # MID TERM TODO:
 # - Relook into fixing analytics data pulling

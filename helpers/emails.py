@@ -263,7 +263,7 @@ def create_email_excel(input_sheet=None, file_name=""):
                 email_str += "<br>"
 
             course = get_split_course(course_code)
-            email_str += "<br>"
+            email_str += "<b>"
             email_str += text_config["Link"].replace("[0]", course[0]).replace("[1]", course[1])
             # email_str += f'<b>{
             #     course[0]} {
@@ -372,7 +372,8 @@ def create_email_excel(input_sheet=None, file_name=""):
                 for book_list in section_dict[f"{sections}"]:
                     for book_str in book_list:
                         section_str += book_str
-                section_str += "</ul>"
+                # TODO double check this <li>
+                section_str += "</ul></li>"
                 email_str += section_str
 
             # closing the unordered list for the course
