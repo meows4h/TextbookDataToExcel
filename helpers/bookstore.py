@@ -129,12 +129,13 @@ def pull_textbook_data(gui=False):
     html_content = driver.page_source
     table_export = []
     curr_page = bs4.BeautifulSoup(html_content, "lxml")
-    terms = [   ]
+    terms = []
 
     # if gui true, overwrite custom config
     if gui:
 
         chosen_term = None
+
         def set_term_val(value):
             nonlocal chosen_term
             chosen_term = value
@@ -158,7 +159,10 @@ def pull_textbook_data(gui=False):
         gui_window = AddedGUI(title="Term Choice")
         gui_window.add_label("Which term would you like to collect data for?")
         for choice in gui_terms:
-            gui_window.add_button(f"{choice[1]}", lambda c=choice: [set_term_val(c), gui_window.root.destroy()])
+            gui_window.add_button(
+                f"{choice[1]}",
+                lambda c=choice: [set_term_val(c), gui_window.root.destroy()],
+            )
             print(choice[1])
             print(choice)
         gui_window.root.mainloop()

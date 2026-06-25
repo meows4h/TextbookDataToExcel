@@ -264,7 +264,9 @@ def create_email_excel(input_sheet=None, file_name=""):
 
             course = get_split_course(course_code)
             email_str += "<b>"
-            email_str += text_config["Link"].replace("[0]", course[0]).replace("[1]", course[1])
+            email_str += (
+                text_config["Link"].replace("[0]", course[0]).replace("[1]", course[1])
+            )
             # email_str += f'<b>{
             #     course[0]} {
             #     course[1]}</b><br>Students can find all library materials by <a href="https://search.library.oregonstate.edu/discovery/search?query=any,contains,{

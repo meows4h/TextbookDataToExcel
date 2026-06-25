@@ -51,6 +51,7 @@ def process_name(base, flag):
         temp_name = temp_name.strip()
         return temp_name, 10
 
+
 def process_suggestion(box, len_check=False):
     """Takes the suggestion box element and returns what the top result is."""
     html = box.get_attribute("innerHTML")
@@ -71,7 +72,7 @@ def process_suggestion(box, len_check=False):
         # could check for name info with list_info[0], some comparison
         if list_info:
             return list_info[1].get_text()
- 
+
 
 def get_email(name, driver):
     """Grabs the first email from the suggestion list
@@ -181,7 +182,7 @@ def setup_grabber():
 
 def grabber_gui(textbook_table, email_dict):
     check_state = False
-    email_store = ''
+    email_store = ""
     driver = webdriver.Chrome()
 
     def set_email_store(value):
@@ -201,7 +202,7 @@ def grabber_gui(textbook_table, email_dict):
                     list_info = li.find_all("span", class_="Umn8G")
                     if list_info:
                         res_list.append(list_info[0].get_text())
-                
+
                 return res_list
             except:
                 # gui_window = AddedGUI(title="Email Grabber Helper")
@@ -237,9 +238,18 @@ def grabber_gui(textbook_table, email_dict):
         gui_window = AddedGUI(title="Email Grabber Helper")
         gui_window.add_label(f"Which email is correct for {base_name}?")
         for name in name_list:
-            gui_window.add_button(f"{name}", lambda n=name: [set_email_store(n), gui_window.root.destroy()])
-        gui_window.add_button("No Email", lambda x="NO EMAIL": [set_email_store(x), gui_window.root.destroy()])
-        gui_window.add_button("Refresh Options", lambda y="": [set_email_store(y), gui_window.root.destroy()])
+            gui_window.add_button(
+                f"{name}",
+                lambda n=name: [set_email_store(n), gui_window.root.destroy()],
+            )
+        gui_window.add_button(
+            "No Email",
+            lambda x="NO EMAIL": [set_email_store(x), gui_window.root.destroy()],
+        )
+        gui_window.add_button(
+            "Refresh Options",
+            lambda y="": [set_email_store(y), gui_window.root.destroy()],
+        )
         gui_window.root.mainloop()
 
     def run_get_email(name):
@@ -256,7 +266,7 @@ def grabber_gui(textbook_table, email_dict):
                     check_state = True
                     ui_thread = threading.Thread(target=run_check_ui)
                     ui_thread.start()
-        
+
         email_store = ""
         name = name.replace(",", "")
         name = name.strip()
@@ -292,15 +302,15 @@ def grabber_gui(textbook_table, email_dict):
                     raise ValueError("none of them")
                 elif email_store:
                     return email_store
-                    
+
                 raise ValueError("shouldn't hit this")
-            
+
             except (ValueError, NoSuchElementException, TimeoutException) as err:
                 # print(err)
-                
+
                 # if state == 11 and (isinstance(err, NoSuchElementException) or isinstance(err, TimeoutException)):
                 #     return "NO EMAIL"
-                
+
                 if state == 1:
                     name, state = process_name(name, state)
                     to_box.clear()
@@ -319,14 +329,18 @@ def grabber_gui(textbook_table, email_dict):
                 elif state >= 10:
                     gui_window = AddedGUI(title="Email Grabber Helper")
                     gui_window.add_label(f"No suggestion box found.")
-                    gui_window.add_label(f"Please search for the email belonging to {base_name}.")
-                    gui_window.add_label(f"(If there still is one, that's okay! Just press Done)")
+                    gui_window.add_label(
+                        f"Please search for the email belonging to {base_name}."
+                    )
+                    gui_window.add_label(
+                        f"(If there still is one, that's okay! Just press Done)"
+                    )
                     gui_window.add_button("Done", gui_window.root.destroy)
                     gui_window.root.mainloop()
 
             except StaleElementReferenceException as err:
                 print(err)
-  
+
     full_config = configparser.ConfigParser()
     full_config.read("config.ini")
     config = full_config["Grabber"]
