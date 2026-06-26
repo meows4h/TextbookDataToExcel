@@ -78,6 +78,7 @@ def get_directory(directory, config):
 
 
 def get_filepath(name, home=True):
+    """Gets the OS path for a given file."""
     curr_dir = os.path.dirname(__file__)
     if home:
         path = os.path.join(curr_dir, "..", name)

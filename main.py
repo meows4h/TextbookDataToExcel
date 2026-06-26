@@ -15,15 +15,12 @@ from helpers.sheetmaker import make_excel_sheet
 # MID TERM TODO:
 # - Relook into fixing analytics data pulling
 # - Ensure OneSearch scope is correct and/or reassess the bookstore ISBN pulling
-# - Updating information properly, but also automatically
 
 # BIG PICTURE TODO:
-# - Adding prices from the bookstore site into the bookstore information!
 # - Double check back over all the overdrive books among other ebook sources!
 # - Safe guarding for error checking if extra time
 
 # look at ISBN: 9781478647690 for verifying material type? 19 copies
-# seems high
 # this may have now been fixed due to onesearch checkign
 # these were actually BNC books -- adding a location specifier to track which are ours!
 # BNC copy number needs triple checking, seems to be wrong at a glance .

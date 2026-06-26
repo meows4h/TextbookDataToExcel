@@ -15,15 +15,9 @@ from helpers.analytics import export_analytics, import_analytics
 from helpers.analytics import process_analytics
 from helpers.emails import create_email_excel
 
-# this whole file PROBABLY could be made more or less obsolete with some refactoring!
-# basically just hardcoded some values to always run with, or certain flags rather than pulling from config
-# most of these are either similar, exact, or slimmed down versions of their original workflows, just put into a single function
-# either way, some (or all) of this code is likely redundant. either other places can use this code, or this code can
-# use functions from elsewhere.
 # TODO
 # refactor this file (or the other parts of the project) to optimize
 # project size & functionality
-
 
 def start_mode(flag):
     """Takes an integer input to start an alternative script method."""
