@@ -44,6 +44,34 @@ SELECT "Bibliographic Details"."Author" saw_0,
 FROM "Digital Inventory" WHERE "Bibliographic Details"."ISBN" LIKE '%'
 """
 
+"""
+SELECT "Bibliographic Details"."Author" saw_0,
+"Bibliographic Details"."Earliest Possible Publication Year" saw_1,
+"Bibliographic Details"."Title" saw_2,
+"Bibliographic Details"."Publisher" saw_3,
+"Bibliographic Details"."MMS Id" saw_4,
+"Bibliographic Details"."ISBN" saw_5,
+"Bibliographic Details"."Edition" saw_6,
+"Bibliographic Details"."Material Type" saw_7,
+"Bibliographic Details"."Resource Type" saw_8,
+"Representation Access Rights"."Access Right Name" saw_9,
+"Representation Access Rights"."Access Right Desc" saw_10,
+"Edition Simplified"."Edition Simplified (Num)" saw_11,
+FROM "Digital Inventory" WHERE UPPER("Bibliographic Details"."TITLE") LIKE UPPER('%')
+"""
+
+# TODO
+# fixing missing isbn or mismatched values rom the bookstore
+# if nothing returns, looking up by the book title instead, comparing
+# author, publisher and edition number
+# use new isbn and information to backpush updating the book information
+
+# search onesearch for isbn -> does isbn exist?
+# yes -> pull analytics
+# no -> search title, does title exist?
+# yes -> pull that information and replace
+# no -> book is not in system..?
+
 
 def get_columns(key="ebook"):
     """Gets the columns being used to construct the SQL query."""
