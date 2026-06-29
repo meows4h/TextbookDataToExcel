@@ -72,6 +72,12 @@ FROM "Digital Inventory" WHERE UPPER("Bibliographic Details"."TITLE") LIKE UPPER
 # yes -> pull that information and replace
 # no -> book is not in system..?
 
+# also need to consider the failing to search depending on 
+# ebook conditions?
+
+# might need to restructure whole thing, could be doable to do batch requests and compile all
+# the data together prior and then pull from it as the sheet gets made instead
+
 
 def get_columns(key="ebook"):
     """Gets the columns being used to construct the SQL query."""
