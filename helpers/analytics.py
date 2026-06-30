@@ -60,6 +60,18 @@ SELECT "Bibliographic Details"."Author" saw_0,
 FROM "Digital Inventory" WHERE UPPER("Bibliographic Details"."TITLE") LIKE UPPER('%')
 """
 
+"""
+SELECT 
+   "Bibliographic Details"."Title" saw_0,
+   "Vendor Interface"."Vendor Name" saw_1,
+   "Vendor Interface"."Interface Name" saw_2,
+   "-- Bibliographic Details"."MMS Id" saw_3,
+   "Vendor Interface"."Available" saw_4
+ FROM "E-Inventory"
+ WHERE 
+UPPER("Bibliographic Details"."TITLE") LIKE UPPER('%CLIMATE CASINO%')
+"""
+
 # TODO
 # fixing missing isbn or mismatched values rom the bookstore
 # if nothing returns, looking up by the book title instead, comparing
@@ -72,6 +84,9 @@ FROM "Digital Inventory" WHERE UPPER("Bibliographic Details"."TITLE") LIKE UPPER
 # still store data at old ISBN when exporting to CSV, but inlude alternative
 # ISBN information..? and then reinclude additional ISBN if not in original sheet?
 
+# new solution : E-Inventory ?
+# this should correct any problems and now it should be feasible to take out the representation
+# access right sql queries, which will make it easier to access the correct information
 
 def get_columns(key="ebook"):
     """Gets the columns being used to construct the SQL query."""
