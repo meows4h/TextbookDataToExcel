@@ -66,17 +66,11 @@ FROM "Digital Inventory" WHERE UPPER("Bibliographic Details"."TITLE") LIKE UPPER
 # author, publisher and edition number
 # use new isbn and information to backpush updating the book information
 
-# search onesearch for isbn -> does isbn exist?
-# yes -> pull analytics
-# no -> search title, does title exist?
-# yes -> pull that information and replace
-# no -> book is not in system..?
-
-# also need to consider the failing to search depending on 
-# ebook conditions?
-
-# might need to restructure whole thing, could be doable to do batch requests and compile all
-# the data together prior and then pull from it as the sheet gets made instead
+# can search by isbn but needs to be without restrictive filters
+# then needs to add on the license filters, log where necessary
+# if nothing is found at ISBN, then needs to pivot to searching for book
+# still store data at old ISBN when exporting to CSV, but inlude alternative
+# ISBN information..? and then reinclude additional ISBN if not in original sheet?
 
 
 def get_columns(key="ebook"):
@@ -283,37 +277,6 @@ def pull_e_collection(driver, mms_id):
     return return_list
 
 
-# TODO
-# this was supposed to be the other function i think.
-# oops. double check this later and ensure it is okay
-# as checking for presence is faster than for error i think
-def check_permalink(driver, link):
-    """"""
-    base_window = driver.current_window_handle
-    driver.switch_to.new_window(WindowTypes.TAB)
-
-    correct = True
-
-    driver.get(link)
-    while True:
-        try:
-            WebDriverWait(driver, 6).until(
-                EC.presence_of_element_located(
-                    By.CSS_SELECTOR,
-                    f"h2[translate='nui.search.error.permalink.header']",
-                )
-            )
-            correct = False
-            break
-        except Exception as err:
-            # print(err)
-            break
-    driver.close()
-    driver.switch_to.window(base_window)
-
-    return correct
-
-
 def pull_analytics(driver, isbn_list, state):
     """Pulls the analytics information for the given ISBN list from the table."""
     return_list = []
@@ -422,6 +385,196 @@ def setup_sql(sql_section, sql_list):
     sql += f' FROM "{sql_section}" WHERE "Bibliographic Details"."ISBN"'
     sql += """ LIKE '%' """
     return sql
+
+
+def process_new_isbn(driver, title, state):
+    """Helper function to find what ISBN we do own for a particular book."""
+    check_list = pull_one_search(driver, [title])
+    if check_list[0] is False:
+        print(f"{title} not found on OneSearch.")
+        return None
+    
+    sql_section, sql_columns = get_columns(state)
+    sql_statement = setup_sql(sql_section, sql_columns)
+
+    old = f' WHERE "Bibliographic Details"."ISBN"'
+    new = f'WHERE UPPER("Bibliographic Details"."Title")'
+    sql_statement.replace(old, new)
+    sql_text = sql_statement.replace("'%'", f"UPPER('{title}')")
+    input_sql(driver, sql_text)
+    tr_list = get_table(driver)
+
+    if tr_list == []:
+        print(f"{title} not in Analytics.")
+        return None
+
+    cutoff = 3 + get_col_len(sql_columns)
+    tr_list = tr_list[cutoff:]
+
+    eval_list = []
+
+    # storing entries for empty portions
+    store_dict = {}
+    # storing order for indexing
+    store_list = []
+    for dict in sql_columns:
+        for col in dict["Cols"]:
+            store_dict[col] = ""
+            store_list.append(col)
+
+    for tr in tr_list:
+        td_list = tr.find_all("td")
+        for td in td_list:
+            try:
+                td_id = td["id"]
+                td_text = td.get_text()
+                id_list = td_id.split("_")
+                cat_id = get_int(id_list[5])
+                column = store_list[cat_id]
+                store_dict[column] = td_text
+            except Exception as err:
+                print(err)
+
+        eval_list.append(store_dict.copy())
+
+    # maybe pass in more information later to validate
+    # for material in eval_list:
+
+    if eval_list:
+        return eval_list[0]
+    else:
+        return None
+
+
+# TODO
+# TEST WITH 'CLIMATE CASINO' AS THE TITLE
+# CANNOT DO DIGITAL INVENTORY WITH THE LICENSE TYPES DUE TO PHYSICAL
+# need to work around the digital license problem first !
+# rework this to reprocess the digitial poritions first
+# and then ensure it is checking for Book - Electronic first
+# or something similar
+def process_new_analytics(driver, **kwargs):
+    """Alternative version of processing analytics data."""
+    year = None
+    data = {}
+
+    ebook = process_new_isbn(driver, kwargs["title"], "ebook")
+    physi = process_new_isbn(driver, kwargs["title"], "physical")
+
+    for listing in [physi]:
+        num_items = get_int(listing["Num of Items (In Repository)"])
+        suppressed = get_int(listing["Suppressed from Discovery"])
+
+        if num_items is None:
+            continue
+        if suppressed is None:
+            suppressed = 0
+        if suppressed >= num_items or num_items <= 0:
+            continue
+
+        copy_count = num_items - suppressed
+        book_type = listing["Resource Type"].replace("Book - ", "")
+        mms_id = listing["MMS Id"]
+        link = f"https://search.library.oregonstate.edu/permalink/01ALLIANCE_OSU/19c134f/alma{mms_id}"
+
+        # tracking physical location
+        location = listing["Location Name"]
+        temp_loc = listing["Temporary Location Name"]
+        temp_loc_inuse = listing["Temporary Physical Location in Use"]
+        if temp_loc_inuse == "Yes":
+            temp_loc_inuse = True
+        else:
+            temp_loc_inuse = False
+
+        if temp_loc_inuse:
+            location = temp_loc
+
+        if location == "Valley Reserves Suppressed":
+            continue
+
+        if year is None:
+            year = listing["Earliest Possible Publication Year"]
+
+        if mms_id not in data:
+            data[mms_id] = {
+                "Types": [book_type],
+                "Copies": [copy_count],
+                "Users": [0],
+                "CDL": [False],
+                "Link": link,
+                "Year": year,
+                "Location": location,
+            }
+        else:
+            if book_type not in data[mms_id]["Types"]:
+                data[mms_id]["Types"].append(book_type)
+                data[mms_id]["Copies"].append(copy_count)
+                data[mms_id]["Users"].append(0)
+                data[mms_id]["CDL"].append(False)
+            else:
+                type_idx = data[mms_id]["Types"].index(book_type)
+                data[mms_id]["Copies"][type_idx] += copy_count
+
+            if year is not None:
+                data[mms_id]["Year"] = year
+
+            if location != "" and data[mms_id]["Location"] == "":
+                data[mms_id]["Location"] = location
+
+    for listing in [ebook]:
+        book_type = listing["Resource Type"].replace("Book - ", "")
+        if book_type != "Electronic":
+            continue
+        mms_id = listing["MMS Id"]
+        link = f"https://search.library.oregonstate.edu/permalink/01ALLIANCE_OSU/19c134f/alma{mms_id}"
+        if year is None:
+            year = listing["Earliest Possible Publication Year"]
+
+        # TODO
+        # double check this implementation
+        access_platform = ""
+        e_collection_list = pull_e_collection(driver, mms_id)
+        for collection in e_collection_list:
+            if collection["Electronic Collection Public Name"]:
+                access_platform = collection["Electronic Collection Public Name"]
+
+        access_name = listing["Access Right Name"]
+        access_desc = listing["Access Right Desc"]
+        users = -1
+        cdl = False
+        if "CDL" in access_name:
+            cdl = True
+        if "Allows" in access_desc:
+            temp = access_desc.split(" ")
+            users = get_int(temp[1])
+
+        if mms_id not in data:
+            data[mms_id] = {
+                "Types": [book_type],
+                "Copies": [0],
+                "Users": [users],
+                "CDL": [cdl],
+                "Link": link,
+                "Platform": access_platform,
+                "Year": year,
+            }
+        else:
+            if book_type not in data[mms_id]["Types"]:
+                data[mms_id]["Types"].append(book_type)
+                data[mms_id]["Copies"].append(0)
+                data[mms_id]["Users"].append(users)
+                data[mms_id]["CDL"].append(cdl)
+            else:
+                type_idx = data[mms_id]["Types"].index(book_type)
+                data[mms_id]["Users"][type_idx] += users
+
+            if year is not None:
+                data[mms_id]["Year"] = year
+
+            if access_platform != "" and data[mms_id]["Platform"] == "":
+                data[mms_id]["Platform"] = access_platform
+
+    return data
 
 
 def process_analytics(analytics_driver, isbn):
