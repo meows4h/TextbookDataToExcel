@@ -12,7 +12,7 @@ from helpers.grabber import setup_grabber, get_email, grabber_gui
 from helpers.grabber import email_exporter, email_importer
 from helpers.analytics import setup_analytics
 from helpers.analytics import export_analytics, import_analytics
-from helpers.analytics import process_analytics, process_new_analytics
+from helpers.analytics import process_analytics
 from helpers.emails import create_email_excel
 
 # TODO
