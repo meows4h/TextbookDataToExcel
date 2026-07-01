@@ -495,6 +495,9 @@ def process_analytics(analytics_driver, isbn):
             mms_id = listing["MMS Id"]
             link = f"https://search.library.oregonstate.edu/permalink/01ALLIANCE_OSU/19c134f/alma{mms_id}"
 
+            if mms_id.strip() == "":
+                continue
+
             # TODO
             # double check implementation of this one search checker
             check_list = pull_one_search(analytics_driver, [mms_id])
@@ -561,6 +564,9 @@ def process_analytics(analytics_driver, isbn):
             link = f"https://search.library.oregonstate.edu/permalink/01ALLIANCE_OSU/19c134f/alma{mms_id}"
             if year is None:
                 year = listing["Earliest Possible Publication Year"]
+
+            if mms_id.strip() == "":
+                continue
 
             # TODO
             # double check implementation of this one search checker
