@@ -167,6 +167,17 @@ def get_columns(key="ebook"):
         ]
         overall_section = "E-Inventory"
     # isbn_list = [9781478651123, 9780357900161, 9781544342337, 9781394152100]
+
+    elif key == "public":
+        sql_columns = [
+            {"Key": "Bibliographic Details",
+             "Cols": ["MMS Id", "Title"]},
+            {
+                "Key": "Portfolio",
+                "Cols": ["Portfolio Public Note"],
+            },
+        ]
+        overall_section = "E-Inventory" 
     return overall_section, sql_columns
 
 
@@ -602,6 +613,25 @@ def process_analytics(analytics_driver, isbn):
                 if "Allows" in access_desc:
                     temp = access_desc.split(" ")
                     users = get_int(temp[1])
+
+            if users == -1:
+                note_list = pull_data(analytics_driver, "MMS Id", mms_id, "public")
+                for note in note_list:
+                    if note["Portfolio Public Note"]:
+                        note_text = note["Portfolio Public Note"]
+                        upper_text = note_text.upper()
+                        # looking at all the analytics entries, this is what cuts the most out w/o cutting any off
+                        compare = "Connect to this resource online".upper()
+                        if compare in upper_text:
+                            if "unlimited".upper() in upper_text:
+                                users = "unlimited"
+                            elif "multiple".upper() in upper_text:
+                                users = "multiple"
+                            else:
+                                process_list = upper_text.split("(")
+                                for section in process_list:
+                                    if "user".upper() in section:
+                                        users = get_int(section.split(" ")[0])
 
             if mms_id not in data:
                 data[mms_id] = {
