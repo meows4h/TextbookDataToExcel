@@ -200,22 +200,49 @@ def enrollment_update(sheet_name, file_name=""):
 
     for row in worksheet.iter_rows(min_row=2):
         course_num = 1
-        for cell in row:
+        section_num = 1
+        skip_rule = 0
+        course_code = ""
+        section_code = ""
+        for idx, cell in enumerate(row):
+            if skip_rule > 0:
+                skip_rule -= 1
+                continue
             col = cell.column_letter
             col_header = worksheet[f"{col}1"].value
+            section_header = header_format[1].replace("$", f"{course_num}").replace("&", f"{section_num}")
             course_header = header_format[0].replace("$", f"{course_num}")
-            if col_header == course_header:
-                course_num += 1
+            next_header = header_format[0].replace("$", f"{course_num+1}")
 
-                # the idea here would be to compare the course code to enrollment data
-                # then update the subsequent enrollment section
+            if col_header == course_header:
+                if cell.value == "" or pd.isna(cell.value):
+                    course_code = ""
+                    section_code = ""
+                    skip_rule = 4
+                    continue
+                course_code = cell.value
+
+            if col_header == section_header:
+                if cell.value == "" or pd.isna(cell.value):
+                    section_code = ""
+                    skip_rule = 3
+                    continue
+                section_code = f"{cell.value}"
+
+                if enroll_dict[course_code][section_code]:
+                    # the 0th index is the enrollment number, 1st is campus
+                    # look at incorperating campuses?
+                    row[idx+3].value = enroll_dict[course_code][section_code][0]
+
+            if col_header == next_header:
+                course_num += 1
+                section_num = 1
 
 
 # this function is functional, but not complete
 def analytics_update(sheet_name, file_name=""):
     """Updates the excel sheet with data from the analytics csv file.
-    NOTE: It will **NOT** overwrite existing data due to protecting manual data entry.
-    """
+    It will **NOT** overwrite existing data due to protecting manual data entry."""
     full_config = configparser.ConfigParser()
     full_config.read("config.ini")
     alma_config = full_config["Alma"]

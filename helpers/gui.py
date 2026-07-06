@@ -354,17 +354,17 @@ class GUI:
             ttk.Button(
                 self.main_tab,
                 text="Update Emails",
-                command=lambda: emails_update(sheet_name.get()),
+                command=lambda: emails_update(sheet_name.get(), file_name.get()),
             ).grid(column=0, row=5, sticky=tk.W)
             ttk.Button(
                 self.main_tab,
                 text="Update Analytics",
-                command=lambda: analytics_update(sheet_name.get()),
+                command=lambda: analytics_update(sheet_name.get(), file_name.get()),
             ).grid(column=0, row=6, sticky=tk.W)
             ttk.Button(
                 self.main_tab,
                 text="Update Enrollment",
-                command=lambda: enrollment_update(sheet_name.get()),
+                command=lambda: enrollment_update(sheet_name.get(), file_name.get()),
             ).grid(column=0, row=7, sticky=tk.W)
             ttk.Button(self.main_tab, text="Go Back", command=self.build_main).grid(
                 column=0, row=8, sticky=tk.W
