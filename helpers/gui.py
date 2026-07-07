@@ -14,6 +14,7 @@ from helpers.bookstore import pull_textbook_data, pull_info
 # reset screen in each case, store variables on the class scale
 class GUI:
     """This is the primary class in which the main GUI is ran through."""
+
     def __init__(self, root):
         self.cfg_path = "config.ini"
         self.cfg = configparser.ConfigParser()

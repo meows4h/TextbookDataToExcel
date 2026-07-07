@@ -28,7 +28,7 @@ from helpers.sheetmaker import make_excel_sheet
 #     to be recorded, but lots of the options are kinda left as is
 # - resolving leftover TODO statements in the various scripts
 #     not all of these are serious needs, requirements, or fixes
-#     as much as they are probably spots i have left notes of 
+#     as much as they are probably spots i have left notes of
 #     what COULD be done or what hasn't been fully tested
 
 config = configparser.ConfigParser()

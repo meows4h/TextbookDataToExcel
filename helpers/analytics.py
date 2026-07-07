@@ -88,6 +88,7 @@ UPPER("Bibliographic Details"."TITLE") LIKE UPPER('%CLIMATE CASINO%')
 # this should correct any problems and now it should be feasible to take out the representation
 # access right sql queries, which will make it easier to access the correct information
 
+
 def get_columns(key="ebook"):
     """Gets the columns being used to construct the SQL query."""
     sql_columns = []
@@ -121,7 +122,7 @@ def get_columns(key="ebook"):
             {
                 "Key": "Representation Access Rights",
                 "Cols": ["Access Right Name", "Access Right Desc"],
-            }
+            },
         ]
         overall_section = "Digital Inventory"
 
@@ -158,8 +159,7 @@ def get_columns(key="ebook"):
 
     elif key == "e-inventory":
         sql_columns = [
-            {"Key": "Bibliographic Details",
-             "Cols": ["MMS Id", "Title"]},
+            {"Key": "Bibliographic Details", "Cols": ["MMS Id", "Title"]},
             {
                 "Key": "Electronic Collection",
                 "Cols": ["Electronic Collection Public Name"],
@@ -170,14 +170,13 @@ def get_columns(key="ebook"):
 
     elif key == "public":
         sql_columns = [
-            {"Key": "Bibliographic Details",
-             "Cols": ["MMS Id", "Title"]},
+            {"Key": "Bibliographic Details", "Cols": ["MMS Id", "Title"]},
             {
                 "Key": "Portfolio",
                 "Cols": ["Portfolio Public Note"],
             },
         ]
-        overall_section = "E-Inventory" 
+        overall_section = "E-Inventory"
     return overall_section, sql_columns
 
 
@@ -422,7 +421,7 @@ def process_new_isbn(driver, title, state):
     if check_list[0] is False:
         print(f"{title} not found on OneSearch.")
         return None
-    
+
     sql_section, sql_columns = get_columns(state)
     sql_statement = setup_sql(sql_section, sql_columns)
 
@@ -561,7 +560,7 @@ def process_analytics(analytics_driver, isbn):
 
                 if location != "" and data[mms_id]["Location"] == "":
                     data[mms_id]["Location"] = location
-        
+
         except Exception as err:
             print("Print book processing error.")
             print(err)
@@ -589,7 +588,9 @@ def process_analytics(analytics_driver, isbn):
             # TODO
             # double check this implementation
             access_platform = ""
-            e_collection_list = pull_data(analytics_driver, "MMS Id", mms_id, "e-inventory")
+            e_collection_list = pull_data(
+                analytics_driver, "MMS Id", mms_id, "e-inventory"
+            )
             for collection in e_collection_list:
                 if collection["Electronic Collection Public Name"]:
                     access_platform = collection["Electronic Collection Public Name"]
@@ -602,7 +603,7 @@ def process_analytics(analytics_driver, isbn):
                     access_name = access["Access Right Name"]
                 if access["Access Right Desc"]:
                     access_desc = access["Access Right Desc"]
-            
+
             cdl = False
             if access_name:
                 if "CDL" in access_name:

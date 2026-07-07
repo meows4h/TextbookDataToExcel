@@ -182,7 +182,7 @@ def setup_grabber():
 
 def grabber_gui(textbook_table, email_dict):
     """This functions similar to the CLI component of the Outlook Email Grabber,
-       but is more self contained to keep it all in one spot with threads."""
+    but is more self contained to keep it all in one spot with threads."""
     check_state = False
     email_store = ""
     driver = webdriver.Chrome()
