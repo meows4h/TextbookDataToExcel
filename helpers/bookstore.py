@@ -12,7 +12,7 @@ from helpers.helpergui import AddedGUI
 
 
 def str_clean(str):
-    """"""
+    """Removes special characters and whitespace from a string."""
     new_str = str.replace("&nbsp;", "")
     new_str = new_str.replace("  ", "")
     new_str = new_str.replace("\t", "")
@@ -21,7 +21,7 @@ def str_clean(str):
 
 
 def get_page_soup(driver, url):
-    """"""
+    """Pulls the current page HTML into a more workable format."""
     driver.get(url)
     html_content = driver.page_source
     page = bs4.BeautifulSoup(html_content, "lxml")
@@ -29,7 +29,7 @@ def get_page_soup(driver, url):
 
 
 def get_link(link, term, subject, code, section):
-    """"""
+    """Function to replace some of the template words to help with modularity."""
     link = link.replace("TERM", f"{term}")
     link = link.replace("SUBJECT", f"{subject}")
     link = link.replace("CODE", f"{code}")
@@ -37,53 +37,105 @@ def get_link(link, term, subject, code, section):
     return link
 
 
-def get_row_price(driver, row, link):
-    """"""
-    term = row[0]
-    department = row[1]
-    dep_arr = department.split(":")
-    subj_code = dep_arr[0].strip()
-    subj_num = row[2]
-    section = row[3]
-    isbn = row[8].replace("-", "").strip()
-    link = get_link(link, term, subj_code, subj_num, section)
+# TODO
+# long queries cause requests to be too large, in turn causing server overload
+# probably leave this alone for now then...?
+def get_prices(driver, table):
+    """This would in theory grab the lowest price of a given row of bookstore information.
+       For now, this will go unused as the direct access to the price comparison is
+       rate limited, meaning it would not be worth doing due to time."""
 
-    price = ""
+    seperator = "%2C"
+    id_template = "TERM__SUBJECT__CODE__SECTION"
+    store_link = "https://osubeaverstore.verbacompare.com/comparison?id="
+
+    link_list = []
+    
+    master_link = f"{store_link}"
+    table_size = len(table)
+    course_letter = "A"
+    for idx, row in enumerate(table):
+        isbn = row[8].replace("-", "").strip()
+        if isbn == "" or isbn is None:
+            continue
+
+        term = row[0]
+        department = row[1]
+        dep_arr = department.split(":")
+        subj_code = dep_arr[0].strip()
+        letter = subj_code[0]
+        subj_num = row[2]
+        section = row[3]
+
+        if letter != course_letter:
+            link_list.append(master_link[:-3])
+            master_link = f"{store_link}"
+            course_letter = letter
+        
+        master_link += get_link(id_template, term, subj_code, subj_num, section)
+        if idx + 1 < table_size:
+            master_link += seperator
 
     base_window = driver.current_window_handle
     driver.switch_to.new_window(WindowTypes.TAB)
-    driver.get(link)
+    price_table = {}
 
-    try:
-        WebDriverWait(driver, 5).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "item"))
-        )
-        materials = driver.find_elements(By.CLASS_NAME, "item")
-        book_found = False
-        main_div = None
-        for material in materials:
-            html = material.get_attribute("innerHTML")
-            lxml = bs4.BeautifulSoup(html, "lxml")
-            td_list = lxml.find_all("td")
-            for td in td_list:
-                if td.get_text() == isbn:
-                    book_found = True
-                    main_div = material
-                    break
-            if book_found:
+    for link in link_list:
+        driver.get(link)
+        while True:
+            try:
+                WebDriverWait(driver, 5).until(
+                    EC.presence_of_element_located((By.CLASS_NAME, "css_button"))
+                )
+                button = driver.find_elements(By.CLASS_NAME, "css_button")
+                button[0].click()
                 break
+            except Exception as err:
+                print(err)
 
-        if book_found:
-            main_div.click()
-            # TODO left off here!
-            # this needs to pull the used and new price points from the beaverstore page
-            # https://osubeaverstore.verbacompare.com/comparison?id=2026-Summer__AEC__411__400
-    except Exception as err:
-        print(err)
+        material_dict = {}
+        time.sleep(1)
+        try:
+            WebDriverWait(driver, 5).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "item"))
+            )
+            materials = driver.find_elements(By.CLASS_NAME, "item")
+            # book_found = False
+            main_div = None
+            for material in materials:
+                html = material.get_attribute("innerHTML")
+                lxml = bs4.BeautifulSoup(html, "lxml")
+                td_list = lxml.find_all("td")
+                mat_isbn = td_list[3].get_text
+                material_dict[mat_isbn] = material
+
+            for row in table:
+                isbn = row[8].replace("-", "").strip()
+                if isbn not in material_dict or row[8] in price_table:
+                    continue
+                main_div = material_dict[isbn]
+                main_div.click()
+                # TODO
+                # this needs to pull the used and new price points from the beaverstore page
+                # https://osubeaverstore.verbacompare.com/comparison?id=2026-Summer__AEC__411__400
+                html = main_div.get_attribute("innerHTML")
+                lxml = bs4.BeautifulSoup(html, "lxml")
+                price_list = lxml.find_all(class_='price')
+                minimum = float('inf')
+                for idx, price in enumerate(price_list):
+                    price_list[idx] = price.strip().replace("$", "")
+                    price_list[idx] = round(float(price_list[idx]), 2)
+                    if price_list[idx] < minimum:
+                        minimum = price_list[idx]
+                
+                price_table[row[8]] = f"${minimum}"
+
+        except Exception as err:
+            print(err)
 
     driver.close()
     driver.switch_to.window(base_window)
-    return price
+    return price_table
 
 
 def pull_textbook_data(gui=False):
@@ -100,7 +152,7 @@ def pull_textbook_data(gui=False):
     nocost_skip = get_state(config["NoCostSkip"])
     save_file = get_state(config["Save"])
     textbk_path = get_directory("Save", config)
-    custom_term = [config["CustomNum"], config["CustomName"]]
+    # custom_term = [config["CustomNum"], config["CustomName"]]
 
     # gets chrome tab
     driver = webdriver.Chrome()
@@ -111,11 +163,8 @@ def pull_textbook_data(gui=False):
     print("Awaiting CAPTCHA completion.")
 
     list_link = "https://beavs.osubeaverstore.com/Textbooks.asp"
-    store_link = "https://osubeaverstore.verbacompare.com/comparison?id=TERM__SUBJECT__CODE__SECTION"
-
     driver.get(list_link)
     exit_check = False
-    term_int = 0
 
     while not exit_check:
         captcha_html = driver.page_source
@@ -243,10 +292,12 @@ def pull_textbook_data(gui=False):
 
                         # append the row to the master matrix
                         if row_skip == 0:
-                            # commenting out for now to run new data pulling
-                            # row_text.append(
-                            #     get_row_price(
-                            #         driver, row_text, store_link))
+                            # if at some point it would be desirable to add in book pricing
+                            # this function doesn't work as is, but i stopped progress on it
+                            # seeing has the compare site has rate limiting, which is fair
+                            # otherwise, it would be best to simply link to the compare site
+                            # in the sheet if anything i think
+                            # row_text.append(STORE LINK HERE)
                             table_export.append(row_text)
 
             # logging text
@@ -257,6 +308,11 @@ def pull_textbook_data(gui=False):
         # formatting output
         if output:
             print("\n")
+
+    # price_table = get_prices(driver, table_export)
+    # for row in table_export:
+    #     if row[8] in price_table:
+    #         row.append(price_table[row[8]])
 
     # open an output csv file and then write the header into it before writing
     # every list element (row data) as a row in the csv file

@@ -44,6 +44,49 @@ SELECT "Bibliographic Details"."Author" saw_0,
 FROM "Digital Inventory" WHERE "Bibliographic Details"."ISBN" LIKE '%'
 """
 
+"""
+SELECT "Bibliographic Details"."Author" saw_0,
+"Bibliographic Details"."Earliest Possible Publication Year" saw_1,
+"Bibliographic Details"."Title" saw_2,
+"Bibliographic Details"."Publisher" saw_3,
+"Bibliographic Details"."MMS Id" saw_4,
+"Bibliographic Details"."ISBN" saw_5,
+"Bibliographic Details"."Edition" saw_6,
+"Bibliographic Details"."Material Type" saw_7,
+"Bibliographic Details"."Resource Type" saw_8,
+"Representation Access Rights"."Access Right Name" saw_9,
+"Representation Access Rights"."Access Right Desc" saw_10,
+"Edition Simplified"."Edition Simplified (Num)" saw_11,
+FROM "Digital Inventory" WHERE UPPER("Bibliographic Details"."TITLE") LIKE UPPER('%')
+"""
+
+"""
+SELECT 
+   "Bibliographic Details"."Title" saw_0,
+   "Vendor Interface"."Vendor Name" saw_1,
+   "Vendor Interface"."Interface Name" saw_2,
+   "-- Bibliographic Details"."MMS Id" saw_3,
+   "Vendor Interface"."Available" saw_4
+ FROM "E-Inventory"
+ WHERE 
+UPPER("Bibliographic Details"."TITLE") LIKE UPPER('%CLIMATE CASINO%')
+"""
+
+# TODO
+# fixing missing isbn or mismatched values rom the bookstore
+# if nothing returns, looking up by the book title instead, comparing
+# author, publisher and edition number
+# use new isbn and information to backpush updating the book information
+
+# can search by isbn but needs to be without restrictive filters
+# then needs to add on the license filters, log where necessary
+# if nothing is found at ISBN, then needs to pivot to searching for book
+# still store data at old ISBN when exporting to CSV, but inlude alternative
+# ISBN information..? and then reinclude additional ISBN if not in original sheet?
+
+# new solution : E-Inventory ?
+# this should correct any problems and now it should be feasible to take out the representation
+# access right sql queries, which will make it easier to access the correct information
 
 def get_columns(key="ebook"):
     """Gets the columns being used to construct the SQL query."""
@@ -65,11 +108,20 @@ def get_columns(key="ebook"):
                     "Resource Type",
                 ],
             },
+            {"Key": "Edition Simplified", "Cols": ["Edition Simplified (Num)"]},
+        ]
+        overall_section = "Digital Inventory"
+
+    if key == "access":
+        sql_columns = [
+            {
+                "Key": "Bibliographic Details",
+                "Cols": ["MMS Id"],
+            },
             {
                 "Key": "Representation Access Rights",
                 "Cols": ["Access Right Name", "Access Right Desc"],
-            },
-            {"Key": "Edition Simplified", "Cols": ["Edition Simplified (Num)"]},
+            }
         ]
         overall_section = "Digital Inventory"
 
@@ -106,7 +158,8 @@ def get_columns(key="ebook"):
 
     elif key == "e-inventory":
         sql_columns = [
-            {"Key": "Bibliographic Details", "Cols": ["MMS Id"]},
+            {"Key": "Bibliographic Details",
+             "Cols": ["MMS Id", "Title"]},
             {
                 "Key": "Electronic Collection",
                 "Cols": ["Electronic Collection Public Name"],
@@ -114,6 +167,17 @@ def get_columns(key="ebook"):
         ]
         overall_section = "E-Inventory"
     # isbn_list = [9781478651123, 9780357900161, 9781544342337, 9781394152100]
+
+    elif key == "public":
+        sql_columns = [
+            {"Key": "Bibliographic Details",
+             "Cols": ["MMS Id", "Title"]},
+            {
+                "Key": "Portfolio",
+                "Cols": ["Portfolio Public Note"],
+            },
+        ]
+        overall_section = "E-Inventory" 
     return overall_section, sql_columns
 
 
@@ -191,27 +255,13 @@ def pull_one_search(driver, mms_list):
     return result_list
 
 
-def pull_e_collection(driver, mms_id):
+def pull_data(driver, bib_section, bib_value, sql_key):
     """"""
-    section, sql_cols = get_columns(key="e-inventory")
-    sql = "SELECT"
-    idx = 0
-    for dict in sql_cols:
-        subsection = dict["Key"]
-        for col in dict["Cols"]:
-            sql += f' "{subsection}"."{col}" saw_{idx},'
-            idx += 1
-    sql += f' FROM "{section}" WHERE "Bibliographic Details"."MMS Id"'
-    sql += f""" LIKE '%{mms_id}%' """
+    section, sql_cols = get_columns(key=f"{sql_key}")
+    sql = setup_sql(section, sql_cols, f"{bib_section}")
+    sql = sql.replace("%", f"%{bib_value}%")
     input_sql(driver, sql)
     tr_list = get_table(driver)
-
-    # TODO
-    # finish implementation of this!
-    # this needs to handle cases where it cant find anything?
-    # on top of this, it can likely trust there is a single line entry.
-    # it just needs the overdrive listing.
-    # double check that mms id works!
 
     if tr_list == []:
         return []
@@ -249,35 +299,11 @@ def pull_e_collection(driver, mms_id):
     return return_list
 
 
-# TODO
-# this was supposed to be the other function i think.
-# oops. double check this later and ensure it is okay
-# as checking for presence is faster than for error i think
-def check_permalink(driver, link):
+def pull_ebook_access(driver, mms_id):
     """"""
-    base_window = driver.current_window_handle
-    driver.switch_to.new_window(WindowTypes.TAB)
-
-    correct = True
-
-    driver.get(link)
-    while True:
-        try:
-            WebDriverWait(driver, 6).until(
-                EC.presence_of_element_located(
-                    By.CSS_SELECTOR,
-                    f"h2[translate='nui.search.error.permalink.header']",
-                )
-            )
-            correct = False
-            break
-        except Exception as err:
-            # print(err)
-            break
-    driver.close()
-    driver.switch_to.window(base_window)
-
-    return correct
+    section, sql_cols = get_columns(key="access")
+    sql = setup_sql(section, sql_cols, "MMS Id")
+    sql = sql.replace("%", f"%{mms_id}%")
 
 
 def pull_analytics(driver, isbn_list, state):
@@ -376,7 +402,7 @@ def click_element(driver, tag, selector, detail):
             print(err)
 
 
-def setup_sql(sql_section, sql_list):
+def setup_sql(sql_section, sql_list, bib_section="ISBN"):
     """Helper function to turn the SQL categories and lists into a full single query."""
     sql = "SELECT"
     idx = 0
@@ -385,146 +411,257 @@ def setup_sql(sql_section, sql_list):
         for col in dict["Cols"]:
             sql += f' "{section}"."{col}" saw_{idx},'
             idx += 1
-    sql += f' FROM "{sql_section}" WHERE "Bibliographic Details"."ISBN"'
+    sql += f' FROM "{sql_section}" WHERE "Bibliographic Details"."{bib_section}"'
     sql += """ LIKE '%' """
     return sql
 
 
+def process_new_isbn(driver, title, state):
+    """Helper function to find what ISBN we do own for a particular book."""
+    check_list = pull_one_search(driver, [title])
+    if check_list[0] is False:
+        print(f"{title} not found on OneSearch.")
+        return None
+    
+    sql_section, sql_columns = get_columns(state)
+    sql_statement = setup_sql(sql_section, sql_columns)
+
+    old = f' WHERE "Bibliographic Details"."ISBN"'
+    new = f'WHERE UPPER("Bibliographic Details"."Title")'
+    sql_statement.replace(old, new)
+    sql_text = sql_statement.replace("'%'", f"UPPER('{title}')")
+    input_sql(driver, sql_text)
+    tr_list = get_table(driver)
+
+    if tr_list == []:
+        print(f"{title} not in Analytics.")
+        return None
+
+    cutoff = 3 + get_col_len(sql_columns)
+    tr_list = tr_list[cutoff:]
+
+    eval_list = []
+
+    # storing entries for empty portions
+    store_dict = {}
+    # storing order for indexing
+    store_list = []
+    for dict in sql_columns:
+        for col in dict["Cols"]:
+            store_dict[col] = ""
+            store_list.append(col)
+
+    for tr in tr_list:
+        td_list = tr.find_all("td")
+        for td in td_list:
+            try:
+                td_id = td["id"]
+                td_text = td.get_text()
+                id_list = td_id.split("_")
+                cat_id = get_int(id_list[5])
+                column = store_list[cat_id]
+                store_dict[column] = td_text
+            except Exception as err:
+                print(err)
+
+        eval_list.append(store_dict.copy())
+
+    # maybe pass in more information later to validate
+    # for material in eval_list:
+
+    if eval_list:
+        return eval_list[0]
+    else:
+        return None
+
+
+# TODO
+# TEST WITH 'CLIMATE CASINO' AS THE TITLE
+# CANNOT DO DIGITAL INVENTORY WITH THE LICENSE TYPES DUE TO PHYSICAL
+# need to work around the digital license problem first !
+# rework this to reprocess the digitial poritions first
+# and then ensure it is checking for Book - Electronic first
+# or something similar
 def process_analytics(analytics_driver, isbn):
     """Fully processes a given ISBN number and pulling all the data from Alma + processing it."""
     year = None
     data = {}
 
-    print_list = pull_analytics(analytics_driver, [isbn], "physical")
-    ebook_list = pull_analytics(analytics_driver, [isbn], "ebook")
+    print_list = pull_data(analytics_driver, "ISBN", isbn, "physical")
+    ebook_list = pull_data(analytics_driver, "ISBN", isbn, "ebook")
     for listing in print_list:
-        num_items = get_int(listing["Num of Items (In Repository)"])
-        suppressed = get_int(listing["Suppressed from Discovery"])
+        try:
+            num_items = get_int(listing["Num of Items (In Repository)"])
+            suppressed = get_int(listing["Suppressed from Discovery"])
 
-        if num_items is None:
-            continue
-        if suppressed is None:
-            suppressed = 0
-        if suppressed >= num_items or num_items <= 0:
-            continue
+            if num_items is None:
+                continue
+            if suppressed is None:
+                suppressed = 0
+            if suppressed >= num_items or num_items <= 0:
+                continue
 
-        copy_count = num_items - suppressed
-        book_type = listing["Resource Type"].replace("Book - ", "")
-        mms_id = listing["MMS Id"]
-        link = f"https://search.library.oregonstate.edu/permalink/01ALLIANCE_OSU/19c134f/alma{mms_id}"
+            copy_count = num_items - suppressed
+            book_type = listing["Resource Type"].replace("Book - ", "")
+            mms_id = listing["MMS Id"]
+            link = f"https://search.library.oregonstate.edu/permalink/01ALLIANCE_OSU/19c134f/alma{mms_id}"
 
-        # TODO
-        # double check implementation of this one search checker
-        check_list = pull_one_search(analytics_driver, [mms_id])
-        if check_list[0] is False:
-            print(
-                f"Missing from Primo (PHYSICAL); skipping. {mms_id} : num:{num_items} supp:{suppressed}"
-            )
-            continue
+            if mms_id.strip() == "":
+                continue
 
-        # tracking physical location
-        location = listing["Location Name"]
-        temp_loc = listing["Temporary Location Name"]
-        temp_loc_inuse = listing["Temporary Physical Location in Use"]
-        if temp_loc_inuse == "Yes":
-            temp_loc_inuse = True
-        else:
-            temp_loc_inuse = False
+            # TODO
+            # double check implementation of this one search checker
+            check_list = pull_one_search(analytics_driver, [mms_id])
+            if check_list[0] is False:
+                print(
+                    f"Missing from Primo (PHYSICAL); skipping. {mms_id} : num:{num_items} supp:{suppressed}"
+                )
+                continue
 
-        if temp_loc_inuse:
-            location = temp_loc
-
-        if location == "Valley Reserves Suppressed":
-            continue
-
-        if year is None:
-            year = listing["Earliest Possible Publication Year"]
-
-        if mms_id not in data:
-            data[mms_id] = {
-                "Types": [book_type],
-                "Copies": [copy_count],
-                "Users": [0],
-                "CDL": [False],
-                "Link": link,
-                "Year": year,
-                "Location": location,
-            }
-        else:
-            if book_type not in data[mms_id]["Types"]:
-                data[mms_id]["Types"].append(book_type)
-                data[mms_id]["Copies"].append(copy_count)
-                data[mms_id]["Users"].append(0)
-                data[mms_id]["CDL"].append(False)
+            # tracking physical location
+            location = listing["Location Name"]
+            temp_loc = listing["Temporary Location Name"]
+            temp_loc_inuse = listing["Temporary Physical Location in Use"]
+            if temp_loc_inuse == "Yes":
+                temp_loc_inuse = True
             else:
-                type_idx = data[mms_id]["Types"].index(book_type)
-                data[mms_id]["Copies"][type_idx] += copy_count
+                temp_loc_inuse = False
 
-            if year is not None:
-                data[mms_id]["Year"] = year
+            if temp_loc_inuse:
+                location = temp_loc
 
-            if location != "" and data[mms_id]["Location"] == "":
-                data[mms_id]["Location"] = location
+            if location == "Valley Reserves Suppressed":
+                continue
+
+            if year is None:
+                year = listing["Earliest Possible Publication Year"]
+
+            if mms_id not in data:
+                data[mms_id] = {
+                    "Types": [book_type],
+                    "Copies": [copy_count],
+                    "Users": [0],
+                    "CDL": [False],
+                    "Link": link,
+                    "Year": year,
+                    "Location": location,
+                }
+            else:
+                if book_type not in data[mms_id]["Types"]:
+                    data[mms_id]["Types"].append(book_type)
+                    data[mms_id]["Copies"].append(copy_count)
+                    data[mms_id]["Users"].append(0)
+                    data[mms_id]["CDL"].append(False)
+                else:
+                    type_idx = data[mms_id]["Types"].index(book_type)
+                    data[mms_id]["Copies"][type_idx] += copy_count
+
+                if year is not None:
+                    data[mms_id]["Year"] = year
+
+                if location != "" and data[mms_id]["Location"] == "":
+                    data[mms_id]["Location"] = location
+        
+        except Exception as err:
+            print("Print book processing error.")
+            print(err)
 
     for listing in ebook_list:
-        book_type = listing["Resource Type"].replace("Book - ", "")
-        if book_type != "Electronic":
-            continue
-        mms_id = listing["MMS Id"]
-        link = f"https://search.library.oregonstate.edu/permalink/01ALLIANCE_OSU/19c134f/alma{mms_id}"
-        if year is None:
-            year = listing["Earliest Possible Publication Year"]
+        try:
+            book_type = listing["Resource Type"].replace("Book - ", "")
+            if book_type != "Electronic":
+                continue
+            mms_id = listing["MMS Id"]
+            link = f"https://search.library.oregonstate.edu/permalink/01ALLIANCE_OSU/19c134f/alma{mms_id}"
+            if year is None:
+                year = listing["Earliest Possible Publication Year"]
 
-        # TODO
-        # double check implementation of this one search checker
-        check_list = pull_one_search(analytics_driver, [mms_id])
-        if check_list[0] is False:
-            print(f"Missing from Primo (EBOOK); skipping. {mms_id}")
-            continue
+            if mms_id.strip() == "":
+                continue
 
-        # TODO
-        # double check this implementation
-        access_platform = ""
-        e_collection_list = pull_e_collection(analytics_driver, mms_id)
-        for collection in e_collection_list:
-            if collection["Electronic Collection Public Name"]:
-                access_platform = collection["Electronic Collection Public Name"]
+            # TODO
+            # double check implementation of this one search checker
+            check_list = pull_one_search(analytics_driver, [mms_id])
+            if check_list[0] is False:
+                print(f"Missing from Primo (EBOOK); skipping. {mms_id}")
+                continue
 
-        access_name = listing["Access Right Name"]
-        access_desc = listing["Access Right Desc"]
-        users = -1
-        cdl = False
-        if "CDL" in access_name:
-            cdl = True
-        if "Allows" in access_desc:
-            temp = access_desc.split(" ")
-            users = get_int(temp[1])
+            # TODO
+            # double check this implementation
+            access_platform = ""
+            e_collection_list = pull_data(analytics_driver, "MMS Id", mms_id, "e-inventory")
+            for collection in e_collection_list:
+                if collection["Electronic Collection Public Name"]:
+                    access_platform = collection["Electronic Collection Public Name"]
 
-        if mms_id not in data:
-            data[mms_id] = {
-                "Types": [book_type],
-                "Copies": [0],
-                "Users": [users],
-                "CDL": [cdl],
-                "Link": link,
-                "Platform": access_platform,
-                "Year": year,
-            }
-        else:
-            if book_type not in data[mms_id]["Types"]:
-                data[mms_id]["Types"].append(book_type)
-                data[mms_id]["Copies"].append(0)
-                data[mms_id]["Users"].append(users)
-                data[mms_id]["CDL"].append(cdl)
+            access_list = pull_data(analytics_driver, "MMS Id", mms_id, "access")
+            access_name = ""
+            access_desc = ""
+            for access in access_list:
+                if access["Access Right Name"]:
+                    access_name = access["Access Right Name"]
+                if access["Access Right Desc"]:
+                    access_desc = access["Access Right Desc"]
+            
+            cdl = False
+            if access_name:
+                if "CDL" in access_name:
+                    cdl = True
+
+            users = -1
+            if access_desc:
+                if "Allows" in access_desc:
+                    temp = access_desc.split(" ")
+                    users = get_int(temp[1])
+
+            if users == -1:
+                note_list = pull_data(analytics_driver, "MMS Id", mms_id, "public")
+                for note in note_list:
+                    if note["Portfolio Public Note"]:
+                        note_text = note["Portfolio Public Note"]
+                        upper_text = note_text.upper()
+                        # looking at all the analytics entries, this is what cuts the most out w/o cutting any off
+                        compare = "Connect to this resource online".upper()
+                        if compare in upper_text:
+                            if "unlimited".upper() in upper_text:
+                                users = "unlimited"
+                            elif "multiple".upper() in upper_text:
+                                users = "multiple"
+                            else:
+                                process_list = upper_text.split("(")
+                                for section in process_list:
+                                    if "user".upper() in section:
+                                        users = get_int(section.split(" ")[0])
+
+            if mms_id not in data:
+                data[mms_id] = {
+                    "Types": [book_type],
+                    "Copies": [0],
+                    "Users": [users],
+                    "CDL": [cdl],
+                    "Link": link,
+                    "Platform": access_platform,
+                    "Year": year,
+                }
             else:
-                type_idx = data[mms_id]["Types"].index(book_type)
-                data[mms_id]["Users"][type_idx] += users
+                if book_type not in data[mms_id]["Types"]:
+                    data[mms_id]["Types"].append(book_type)
+                    data[mms_id]["Copies"].append(0)
+                    data[mms_id]["Users"].append(users)
+                    data[mms_id]["CDL"].append(cdl)
+                else:
+                    type_idx = data[mms_id]["Types"].index(book_type)
+                    data[mms_id]["Users"][type_idx] += users
 
-            if year is not None:
-                data[mms_id]["Year"] = year
+                if year is not None:
+                    data[mms_id]["Year"] = year
 
-            if access_platform != "" and data[mms_id]["Platform"] == "":
-                data[mms_id]["Platform"] = access_platform
+                if access_platform != "" and data[mms_id]["Platform"] == "":
+                    data[mms_id]["Platform"] = access_platform
+
+        except Exception as err:
+            print("Ebook error")
+            print(err)
 
         # if pd.isna(ed):
         #     ed = get_edition_string(analytics_dict['Edition Simplified (Num)'])

@@ -31,7 +31,6 @@ def make_excel_sheet(open_outlook=None, open_alma=None, gui_class=None):
     grabber_cfg = full_config["Grabber"]
     analytics_cfg = full_config["Alma"]
 
-    # debug = get_state(config["Debug"])
     remove_duplicates = get_state(config["RemoveDuplicates"])
     remove_see_canvas = get_state(config["RemoveSeeCanvas"])
 

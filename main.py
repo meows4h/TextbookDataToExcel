@@ -6,29 +6,30 @@ from helpers.gui import start_app
 from helpers.sheetmaker import make_excel_sheet
 
 # General TODO:
-# finish modes implementation for enrollment update
-# finish isbn updating / onesearch checking
+# finish isbn updating from the bookstore (i.e. isbn differs from what we own)
 # fully finish documentation.md
-# finish alma analytics update so that it functions properly
 # add images to readme
 
-# MID TERM TODO:
-# - Relook into fixing analytics data pulling
-# - Ensure OneSearch scope is correct and/or reassess the bookstore ISBN pulling
-# - Updating information properly, but also automatically
+# TODO
+# This is a list of improvements that I am aware may be able to be added
+# However, due to time constraints or lack of information are left as is
 
-# BIG PICTURE TODO:
-# - Adding prices from the bookstore site into the bookstore information!
-# - Double check back over all the overdrive books among other ebook sources!
-# - Safe guarding for error checking if extra time
-
-# look at ISBN: 9781478647690 for verifying material type? 19 copies
-# seems high
-# this may have now been fixed due to onesearch checkign
-# these were actually BNC books -- adding a location specifier to track which are ours!
-# BNC copy number needs triple checking, seems to be wrong at a glance .
-# check against this
-# https://search.library.oregonstate.edu/permalink/01ALLIANCE_OSU/15hft48/cdi_proquest_ebookcentral_EBC6871151
+# - try / except blocks around data entry code
+#     things like analytics.py could use more error checking to prevent
+#     runtime errors to prevent loss of data and time
+# - refactoring / reduction in overhead code times
+#     there is unoptimized solutions and code purely for the case of
+#     making this project functional by the necessary date
+#     example of this is exporting after each round of analytics pulling
+# - adding in better modularity + options
+#     there are not many print debug statements, nor direct debugging
+#     in general; not that this is necessary, but it is nice
+#     other options could include allowing ISBN-less bookstore listings
+#     to be recorded, but lots of the options are kinda left as is
+# - resolving leftover TODO statements in the various scripts
+#     not all of these are serious needs, requirements, or fixes
+#     as much as they are probably spots i have left notes of 
+#     what COULD be done or what hasn't been fully tested
 
 config = configparser.ConfigParser()
 config.read("config.ini")

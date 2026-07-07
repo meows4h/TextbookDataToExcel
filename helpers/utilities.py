@@ -78,6 +78,7 @@ def get_directory(directory, config):
 
 
 def get_filepath(name, home=True):
+    """Gets the OS path for a given file."""
     curr_dir = os.path.dirname(__file__)
     if home:
         path = os.path.join(curr_dir, "..", name)
@@ -272,6 +273,26 @@ def get_row_info(row, key):
     """Gets info within a row given a key. Checks for blank information."""
     headers, head_list = get_sheet_headers()
     result = row[headers[f"{key}"]] if not pd.isna(row[headers[f"{key}"]]) else ""
+    return result
+
+
+def get_campus(campus):
+    """Returns the full campus name for the letter."""
+    result = None
+    if campus == "C":
+        result = "Corvallis"
+    elif campus[0] == "D":
+        result = "Ecampus"
+    elif campus == "Z":
+        result = "International"
+    elif campus == "L":
+        result = "LaGrande"
+    elif campus == "N":
+        result = "Newport"
+    elif campus == "B":
+        result = "Cascades"
+    elif campus == "PDX" or campus == "H":
+        result = "Portland"
     return result
 
 

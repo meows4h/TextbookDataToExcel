@@ -4,7 +4,7 @@ import openpyxl
 import threading
 
 from helpers.bookstore import pull_textbook_data, pull_info
-from helpers.utilities import get_int, get_state, get_directory
+from helpers.utilities import get_int, get_campus, get_directory
 from helpers.utilities import get_format_headers, get_input
 from helpers.utilities import get_sheet_headers, get_filepath
 from helpers.enrollment import get_enrollment_data
@@ -15,15 +15,9 @@ from helpers.analytics import export_analytics, import_analytics
 from helpers.analytics import process_analytics
 from helpers.emails import create_email_excel
 
-# this whole file PROBABLY could be made more or less obsolete with some refactoring!
-# basically just hardcoded some values to always run with, or certain flags rather than pulling from config
-# most of these are either similar, exact, or slimmed down versions of their original workflows, just put into a single function
-# either way, some (or all) of this code is likely redundant. either other places can use this code, or this code can
-# use functions from elsewhere.
 # TODO
 # refactor this file (or the other parts of the project) to optimize
 # project size & functionality
-
 
 def start_mode(flag):
     """Takes an integer input to start an alternative script method."""
@@ -166,8 +160,10 @@ def analytics_csv(full_config, textbk_path, pre_import=None):
         if f"{isbn}" in analytics_store:
             continue
 
+        # title = row[5].strip()
         if not (isbn is None or pd.isna(isbn)):
             data = process_analytics(analytics_driver, isbn)
+            # data = process_new_analytics(analytics_driver, title=title)
 
             analytics_store[f"{isbn}"] = {"Data": data}
 
@@ -182,6 +178,7 @@ def analytics_csv(full_config, textbk_path, pre_import=None):
 
 
 # TODO
+# this might need more testing but it seems to work fine for what it updates
 def enrollment_update(sheet_name, file_name=""):
     """Updates the main excel sheet with the data from the enrollment csv file."""
     full_config = configparser.ConfigParser()
@@ -202,24 +199,92 @@ def enrollment_update(sheet_name, file_name=""):
     workbook = openpyxl.load_workbook(directory)
     worksheet = workbook[sheet_name]
 
+    campus_header = header_dict["Campuses"]
+    enroll_header = header_dict["MaxEnroll"]
+    total_changed = 0
     for row in worksheet.iter_rows(min_row=2):
+        # tracking which course + section we are on
         course_num = 1
-        for cell in row:
+        section_num = 1
+        skip_rule = 0
+
+        # temp storage per cell sets 
+        course_code = ""
+        
+        # row storage
+        campus_list = []
+        row_enrollment = 0
+        for idx, cell in enumerate(row):
+            if skip_rule > 0:
+                skip_rule -= 1
+                continue
             col = cell.column_letter
             col_header = worksheet[f"{col}1"].value
+            section_header = header_format[1].replace("$", f"{course_num}").replace("&", f"{section_num}")
             course_header = header_format[0].replace("$", f"{course_num}")
-            if col_header == course_header:
-                course_num += 1
+            next_header = header_format[0].replace("$", f"{course_num+1}")
 
-                # the idea here would be to compare the course code to enrollment data
-                # then update the subsequent enrollment section
+            if col_header == course_header:
+                if cell.value == "" or pd.isna(cell.value):
+                    course_code = ""
+                    skip_rule = 4
+                    continue
+                course_code = cell.value
+
+            elif col_header == section_header:
+                if cell.value == "" or pd.isna(cell.value):
+                    skip_rule = 3
+                    continue
+
+                if course_code in enroll_dict:
+                    if f"{cell.value}" in enroll_dict[course_code]:
+                        # the 0th index is the enrollment number, 1st is campus
+                        enroll_num = enroll_dict[course_code][f"{cell.value}"][0]
+                        campus_letter = enroll_dict[course_code][f"{cell.value}"][1]
+
+                        skip_rule = 3
+
+                        if row[idx+3].value != enroll_num:
+                            total_changed += 1
+                        row[idx+3].value = enroll_num
+                        row_enrollment += enroll_num
+                        campus = get_campus(campus_letter)
+                        if campus not in campus_list:
+                            campus_list.append(campus) 
+
+            elif col_header == next_header:
+                course_num += 1
+                section_num = 1
+                if cell.value == "" or pd.isna(cell.value):
+                    course_code = ""
+                    skip_rule = 4
+                    continue
+                course_code = cell.value
+
+            elif col_header == campus_header:
+                campus_out = ""
+                for num, camp in enumerate(sorted(campus_list)):
+                    if num != 0:
+                        campus_out += ", "
+                    campus_out += camp
+
+                if cell.value != campus_out and not pd.isna(cell.value):
+                    total_changed += 1
+                cell.value = campus_out
+
+            elif col_header == enroll_header:
+                if cell.value != row_enrollment and not pd.isna(cell.value):
+                    total_changed += 1
+                cell.value = row_enrollment
+
+    print(f"Cells changed: {total_changed}")
+    workbook.save(directory)
 
 
 # this function is functional, but not complete
 def analytics_update(sheet_name, file_name=""):
     """Updates the excel sheet with data from the analytics csv file.
-    NOTE: It will **NOT** overwrite existing data due to protecting manual data entry.
-    """
+    It will **NOT** overwrite existing data due to protecting manual data entry."""
     full_config = configparser.ConfigParser()
     full_config.read("config.ini")
     alma_config = full_config["Alma"]

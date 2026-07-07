@@ -13,6 +13,7 @@ from helpers.bookstore import pull_textbook_data, pull_info
 # the idea here is we compartmentalize the different things into different functions to build screens
 # reset screen in each case, store variables on the class scale
 class GUI:
+    """This is the primary class in which the main GUI is ran through."""
     def __init__(self, root):
         self.cfg_path = "config.ini"
         self.cfg = configparser.ConfigParser()
@@ -96,18 +97,14 @@ class GUI:
             child.grid_configure(padx=5, pady=5)
             # self.main_tab.rowconfigure(idx, weight=100)
 
+    # builds the emails tab
     def build_emails(self):
-        # probably want to make some tool to make the reading the bookstore numbers and
-        # terms easier + easier to modify
-        # modifying the output file name
-        # otherwise unsure, maybe checkboxes for this?
         cfgdir = "helpers/ini/emails.ini"
         temp_cfg = configparser.ConfigParser()
         temp_cfg.read(cfgdir)
         max_rows = 0
         email_text = temp_cfg["Main"]
         self.emails_tab.columnconfigure(0, minsize=100)
-        # self.emails_tab.columnconfigure(1, minsize=240)
         for idx, key in enumerate(email_text):
             max_rows = idx
             ttk.Label(self.emails_tab, text=key, width=10).grid(
@@ -176,6 +173,7 @@ class GUI:
             self.advanced_tab, text="Widen the window to see all the options!"
         ).grid(column=0, row=max_depth + 2, sticky=tk.W)
 
+    # create sheet -- Outlook screen
     def build_sheet_outlook(self):
         self.reset_main()
         self.open_outlook = False
@@ -196,6 +194,7 @@ class GUI:
             column=0, row=5, sticky=tk.W
         )
 
+    # create sheet -- Alma screen
     def build_sheet_alma(self):
         self.reset_main()
         self.open_alma = False
@@ -216,6 +215,7 @@ class GUI:
             self.main_tab, text="Go Back", command=self.build_sheet_outlook
         ).grid(column=0, row=5, sticky=tk.W)
 
+    # function to execute building the sheet based on prior options
     def build_sheet_final(self):
         excel_thread = threading.Thread(
             target=lambda: make_excel_sheet(self.open_outlook, self.open_alma, self)
@@ -223,6 +223,7 @@ class GUI:
         excel_thread.start()
         self.build_main()
 
+    # function to ask the user if they would like to import previous information
     def build_import_csv(self, yes_cmd, no_cmd):
         self.reset_main()
         locals_dict = {"self": self}
@@ -239,6 +240,7 @@ class GUI:
             self.main_tab, text="Go Back", command=lambda: self.start_mode(flag=2)
         ).grid(column=0, row=5, sticky=tk.W)
 
+    # function to start updating the analytics.csv file
     def start_analytics_csv(self, import_csv):
         bookstore_cfg = self.cfg["Textbook"]
         textbk_path = get_directory("Save", bookstore_cfg)
@@ -248,11 +250,13 @@ class GUI:
         analytics_thread.start()
         self.build_main()
 
+    # function to start updating the bookstore.csv file
     def start_bookstore_csv(self):
         bookstore_thread = threading.Thread(target=lambda: pull_textbook_data(gui=True))
         bookstore_thread.start()
         self.build_main()
 
+    # function to start updating the emails.csv file
     def start_grabber_csv(self, import_csv):
         bookstore_cfg = self.cfg["Textbook"]
         textbk_path = get_directory("Save", bookstore_cfg)
@@ -350,22 +354,24 @@ class GUI:
             ttk.Button(
                 self.main_tab,
                 text="Update Emails",
-                command=lambda: emails_update(sheet_name.get()),
+                command=lambda: emails_update(sheet_name.get(), file_name.get()),
             ).grid(column=0, row=5, sticky=tk.W)
             ttk.Button(
                 self.main_tab,
                 text="Update Analytics",
-                command=lambda: analytics_update(sheet_name.get()),
+                command=lambda: analytics_update(sheet_name.get(), file_name.get()),
             ).grid(column=0, row=6, sticky=tk.W)
             ttk.Button(
                 self.main_tab,
                 text="Update Enrollment",
-                command=lambda: enrollment_update(sheet_name.get()),
+                command=lambda: enrollment_update(sheet_name.get(), file_name.get()),
             ).grid(column=0, row=7, sticky=tk.W)
             ttk.Button(self.main_tab, text="Go Back", command=self.build_main).grid(
                 column=0, row=8, sticky=tk.W
             )
 
+    # these three config writing functions are for the individual screens
+    # to let the user save information written in to the file itself
     def write_cfg(self):
         for idx, section in enumerate(self.cfg.sections()):
             for jdx, cfgkey in enumerate(self.cfg[section], 1):
@@ -393,6 +399,7 @@ class GUI:
             temp_cfg.write(cfgfile)
 
 
+# function to start the GUI from main.py
 def start_app():
     root = tk.Tk()
     myapp = GUI(root)
