@@ -6,6 +6,22 @@ There are two primary methods that this script runs through: The CLI version and
 This file serves as the starting point for the whole script. If the GUI mode is activated, it will start the GUI from `gui.py`, otherwise, it will take an input from the user and pass it over to `sheetmaker.py` if you're making a new sheet or to `modes.py` if you're using the other features.
 ## analytics.py
 Anything related to handling data from Alma gets handled through this script. Between setting up the browser, parsing the HTML, and handling inputs for things such as the SQL.
+### get_columns
+### get_col_len
+### get_table
+### pull_one_search
+### pull_data
+### pull_analytics
+### input_sql
+### check_element
+### click_element
+### process_new_isbn
+### process_analytics
+### setup_analytics
+### setup_sql
+### export_analytics
+### import_analytics
+
 ## bookstore.py
 Most of this code is pulled from the original bookstore data puller that was made to automate getting bookstore data. It will have the user pass a CAPTCHA and then have them select data to pull from to get the specific term of textbook data they are interested in.
 ## classes.py
