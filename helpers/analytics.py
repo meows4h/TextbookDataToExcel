@@ -179,7 +179,8 @@ def pull_one_search(driver, mms_list):
 
 
 def pull_data(driver, bib_section, bib_value, sql_key):
-    """"""
+    """Given a section, value, and specific SQL template, grabs the
+    relevant data that is desired."""
     section, sql_cols = get_columns(key=f"{sql_key}")
     sql = setup_sql(section, sql_cols, f"{bib_section}")
     sql = sql.replace("%", f"%{bib_value}%")
