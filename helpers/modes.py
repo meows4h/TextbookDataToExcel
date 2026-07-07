@@ -4,7 +4,7 @@ import openpyxl
 import threading
 
 from helpers.bookstore import pull_textbook_data, pull_info
-from helpers.utilities import get_int, get_state, get_directory
+from helpers.utilities import get_int, get_campus, get_directory
 from helpers.utilities import get_format_headers, get_input
 from helpers.utilities import get_sheet_headers, get_filepath
 from helpers.enrollment import get_enrollment_data
@@ -178,6 +178,7 @@ def analytics_csv(full_config, textbk_path, pre_import=None):
 
 
 # TODO
+# this might need more testing but it seems to work fine for what it updates
 def enrollment_update(sheet_name, file_name=""):
     """Updates the main excel sheet with the data from the enrollment csv file."""
     full_config = configparser.ConfigParser()
@@ -198,12 +199,21 @@ def enrollment_update(sheet_name, file_name=""):
     workbook = openpyxl.load_workbook(directory)
     worksheet = workbook[sheet_name]
 
+    campus_header = header_dict["Campuses"]
+    enroll_header = header_dict["MaxEnroll"]
+    total_changed = 0
     for row in worksheet.iter_rows(min_row=2):
+        # tracking which course + section we are on
         course_num = 1
         section_num = 1
         skip_rule = 0
+
+        # temp storage per cell sets 
         course_code = ""
-        section_code = ""
+        
+        # row storage
+        campus_list = []
+        row_enrollment = 0
         for idx, cell in enumerate(row):
             if skip_rule > 0:
                 skip_rule -= 1
@@ -217,26 +227,58 @@ def enrollment_update(sheet_name, file_name=""):
             if col_header == course_header:
                 if cell.value == "" or pd.isna(cell.value):
                     course_code = ""
-                    section_code = ""
                     skip_rule = 4
                     continue
                 course_code = cell.value
 
-            if col_header == section_header:
+            elif col_header == section_header:
                 if cell.value == "" or pd.isna(cell.value):
-                    section_code = ""
                     skip_rule = 3
                     continue
-                section_code = f"{cell.value}"
 
-                if enroll_dict[course_code][section_code]:
-                    # the 0th index is the enrollment number, 1st is campus
-                    # look at incorperating campuses?
-                    row[idx+3].value = enroll_dict[course_code][section_code][0]
+                if course_code in enroll_dict:
+                    if f"{cell.value}" in enroll_dict[course_code]:
+                        # the 0th index is the enrollment number, 1st is campus
+                        enroll_num = enroll_dict[course_code][f"{cell.value}"][0]
+                        campus_letter = enroll_dict[course_code][f"{cell.value}"][1]
 
-            if col_header == next_header:
+                        skip_rule = 3
+
+                        if row[idx+3].value != enroll_num:
+                            total_changed += 1
+                        row[idx+3].value = enroll_num
+                        row_enrollment += enroll_num
+                        campus = get_campus(campus_letter)
+                        if campus not in campus_list:
+                            campus_list.append(campus) 
+
+            elif col_header == next_header:
                 course_num += 1
                 section_num = 1
+                if cell.value == "" or pd.isna(cell.value):
+                    course_code = ""
+                    skip_rule = 4
+                    continue
+                course_code = cell.value
+
+            elif col_header == campus_header:
+                campus_out = ""
+                for num, camp in enumerate(sorted(campus_list)):
+                    if num != 0:
+                        campus_out += ", "
+                    campus_out += camp
+
+                if cell.value != campus_out and not pd.isna(cell.value):
+                    total_changed += 1
+                cell.value = campus_out
+
+            elif col_header == enroll_header:
+                if cell.value != row_enrollment and not pd.isna(cell.value):
+                    total_changed += 1
+                cell.value = row_enrollment
+
+    print(f"Cells changed: {total_changed}")
+    workbook.save(directory)
 
 
 # this function is functional, but not complete

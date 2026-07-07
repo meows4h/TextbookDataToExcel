@@ -1,5 +1,6 @@
 import pandas as pd
 from helpers.utilities import get_replace_header, get_int
+from helpers.utilities import get_campus
 
 
 class Book:
@@ -116,26 +117,6 @@ def get_max_sections_list(book_list, course_amt):
                 # no more to check for the given book
                 pass
     return sec_len
-
-
-def get_campus(campus):
-    """Returns the full campus name for the letter."""
-    result = None
-    if campus == "C":
-        result = "Corvallis"
-    elif campus[0] == "D":
-        result = "Ecampus"
-    elif campus == "Z":
-        result = "International"
-    elif campus == "L":
-        result = "LaGrande"
-    elif campus == "N":
-        result = "Newport"
-    elif campus == "B":
-        result = "Cascades"
-    elif campus == "PDX" or campus == "H":
-        result = "Portland"
-    return result
 
 
 def process_book(book_list, book_dict):

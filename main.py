@@ -6,7 +6,6 @@ from helpers.gui import start_app
 from helpers.sheetmaker import make_excel_sheet
 
 # General TODO:
-# finish modes implementation for enrollment update
 # finish isbn updating from the bookstore (i.e. isbn differs from what we own)
 # fully finish documentation.md
 # add images to readme

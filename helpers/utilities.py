@@ -276,6 +276,26 @@ def get_row_info(row, key):
     return result
 
 
+def get_campus(campus):
+    """Returns the full campus name for the letter."""
+    result = None
+    if campus == "C":
+        result = "Corvallis"
+    elif campus[0] == "D":
+        result = "Ecampus"
+    elif campus == "Z":
+        result = "International"
+    elif campus == "L":
+        result = "LaGrande"
+    elif campus == "N":
+        result = "Newport"
+    elif campus == "B":
+        result = "Cascades"
+    elif campus == "PDX" or campus == "H":
+        result = "Portland"
+    return result
+
+
 def set_col_format(col, num_format, worksheet):
     """This takes a column letter plus some flags and then
     processes the intended style calculations for it."""
