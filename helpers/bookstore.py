@@ -42,15 +42,15 @@ def get_link(link, term, subject, code, section):
 # probably leave this alone for now then...?
 def get_prices(driver, table):
     """This would in theory grab the lowest price of a given row of bookstore information.
-       For now, this will go unused as the direct access to the price comparison is
-       rate limited, meaning it would not be worth doing due to time."""
+    For now, this will go unused as the direct access to the price comparison is
+    rate limited, meaning it would not be worth doing due to time."""
 
     seperator = "%2C"
     id_template = "TERM__SUBJECT__CODE__SECTION"
     store_link = "https://osubeaverstore.verbacompare.com/comparison?id="
 
     link_list = []
-    
+
     master_link = f"{store_link}"
     table_size = len(table)
     course_letter = "A"
@@ -71,7 +71,7 @@ def get_prices(driver, table):
             link_list.append(master_link[:-3])
             master_link = f"{store_link}"
             course_letter = letter
-        
+
         master_link += get_link(id_template, term, subj_code, subj_num, section)
         if idx + 1 < table_size:
             master_link += seperator
@@ -120,14 +120,14 @@ def get_prices(driver, table):
                 # https://osubeaverstore.verbacompare.com/comparison?id=2026-Summer__AEC__411__400
                 html = main_div.get_attribute("innerHTML")
                 lxml = bs4.BeautifulSoup(html, "lxml")
-                price_list = lxml.find_all(class_='price')
-                minimum = float('inf')
+                price_list = lxml.find_all(class_="price")
+                minimum = float("inf")
                 for idx, price in enumerate(price_list):
                     price_list[idx] = price.strip().replace("$", "")
                     price_list[idx] = round(float(price_list[idx]), 2)
                     if price_list[idx] < minimum:
                         minimum = price_list[idx]
-                
+
                 price_table[row[8]] = f"${minimum}"
 
         except Exception as err:

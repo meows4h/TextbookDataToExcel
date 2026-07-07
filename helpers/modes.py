@@ -19,6 +19,7 @@ from helpers.emails import create_email_excel
 # refactor this file (or the other parts of the project) to optimize
 # project size & functionality
 
+
 def start_mode(flag):
     """Takes an integer input to start an alternative script method."""
     if flag == 2:
@@ -208,9 +209,9 @@ def enrollment_update(sheet_name, file_name=""):
         section_num = 1
         skip_rule = 0
 
-        # temp storage per cell sets 
+        # temp storage per cell sets
         course_code = ""
-        
+
         # row storage
         campus_list = []
         row_enrollment = 0
@@ -220,7 +221,11 @@ def enrollment_update(sheet_name, file_name=""):
                 continue
             col = cell.column_letter
             col_header = worksheet[f"{col}1"].value
-            section_header = header_format[1].replace("$", f"{course_num}").replace("&", f"{section_num}")
+            section_header = (
+                header_format[1]
+                .replace("$", f"{course_num}")
+                .replace("&", f"{section_num}")
+            )
             course_header = header_format[0].replace("$", f"{course_num}")
             next_header = header_format[0].replace("$", f"{course_num+1}")
 
@@ -244,13 +249,13 @@ def enrollment_update(sheet_name, file_name=""):
 
                         skip_rule = 3
 
-                        if row[idx+3].value != enroll_num:
+                        if row[idx + 3].value != enroll_num:
                             total_changed += 1
-                        row[idx+3].value = enroll_num
+                        row[idx + 3].value = enroll_num
                         row_enrollment += enroll_num
                         campus = get_campus(campus_letter)
                         if campus not in campus_list:
-                            campus_list.append(campus) 
+                            campus_list.append(campus)
 
             elif col_header == next_header:
                 course_num += 1
