@@ -6,7 +6,7 @@ from helpers.utilities import get_campus
 class Book:
     """Object that stores relevant book information to be used to format and
     configure a dataframe. Takes in a dictionary to construct the base
-    object. See main.py for the book_info dictionary structure."""
+    object. See sheetmaker.py for the book_info dictionary structure."""
 
     def __init__(self, info):
         # bookstore information
@@ -120,7 +120,7 @@ def get_max_sections_list(book_list, course_amt):
 
 
 def process_book(book_list, book_dict):
-    """Processed incoming book information and crates / adds book
+    """Processed incoming book information and creates / adds book
     information to the main list of book objects."""
     book = None
     for search_book in book_list:

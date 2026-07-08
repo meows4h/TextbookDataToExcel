@@ -294,7 +294,7 @@ def pull_textbook_data(gui=False):
                         if row_skip == 0:
                             # if at some point it would be desirable to add in book pricing
                             # this function doesn't work as is, but i stopped progress on it
-                            # seeing has the compare site has rate limiting, which is fair
+                            # seeing as the compare site has rate limiting, which is fair
                             # otherwise, it would be best to simply link to the compare site
                             # in the sheet if anything i think
                             # row_text.append(STORE LINK HERE)

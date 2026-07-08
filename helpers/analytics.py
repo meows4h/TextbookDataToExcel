@@ -223,53 +223,6 @@ def pull_data(driver, bib_section, bib_value, sql_key):
     return return_list
 
 
-def pull_analytics(driver, isbn_list, state):
-    """Pulls the analytics information for the given ISBN list from the table."""
-    return_list = []
-    sql_section, sql_columns = get_columns(state)
-    sql_statement = setup_sql(sql_section, sql_columns)
-
-    for isbn in isbn_list:
-
-        sql_text = sql_statement.replace("%", f"%{isbn}%")
-        input_sql(driver, sql_text)
-        tr_list = get_table(driver)
-
-        if tr_list == []:
-            return return_list
-
-        cutoff = 3 + get_col_len(sql_columns)
-        tr_list = tr_list[cutoff:]
-
-        # storing entries for empty portions
-        store_dict = {}
-        # storing order for indexing
-        store_list = []
-        for dict in sql_columns:
-            for col in dict["Cols"]:
-                store_dict[col] = ""
-                store_list.append(col)
-
-        for tr in tr_list:
-            td_list = tr.find_all("td")
-            for td in td_list:
-                try:
-                    td_id = td["id"]
-                    td_text = td.get_text()
-                    id_list = td_id.split("_")
-                    cat_id = get_int(id_list[5])
-                    column = store_list[cat_id]
-                    store_dict[column] = td_text
-                except Exception as err:
-                    print(err)
-
-            return_list.append(store_dict.copy())
-
-        # print(f"{isbn_list} --> {return_list}")
-
-    return return_list
-
-
 def input_sql(driver, text=""):
     """Helper function that inputs the given text into the SQL input box."""
     click_element(driver, "td", "title", "Edit SQL, XML and other technical details")
@@ -378,13 +331,6 @@ def process_new_isbn(driver, title, state):
         return None
 
 
-# TODO
-# TEST WITH 'CLIMATE CASINO' AS THE TITLE
-# CANNOT DO DIGITAL INVENTORY WITH THE LICENSE TYPES DUE TO PHYSICAL
-# need to work around the digital license problem first !
-# rework this to reprocess the digitial poritions first
-# and then ensure it is checking for Book - Electronic first
-# or something similar
 def process_analytics(analytics_driver, isbn):
     """Fully processes a given ISBN number and pulling all the data from Alma + processing it."""
     year = None
@@ -412,8 +358,6 @@ def process_analytics(analytics_driver, isbn):
             if mms_id.strip() == "":
                 continue
 
-            # TODO
-            # double check implementation of this one search checker
             check_list = pull_one_search(analytics_driver, [mms_id])
             if check_list[0] is False:
                 print(
@@ -482,8 +426,6 @@ def process_analytics(analytics_driver, isbn):
             if mms_id.strip() == "":
                 continue
 
-            # TODO
-            # double check implementation of this one search checker
             check_list = pull_one_search(analytics_driver, [mms_id])
             if check_list[0] is False:
                 print(f"Missing from Primo (EBOOK); skipping. {mms_id}")
