@@ -11,12 +11,21 @@ from helpers.utilities import get_state, get_directory
 from helpers.helpergui import AddedGUI
 
 
-def str_clean(str):
+def str_clean(value):
     """Removes special characters and whitespace from a string."""
-    new_str = str.replace("&nbsp;", "")
-    new_str = new_str.replace("  ", "")
-    new_str = new_str.replace("\t", "")
-    new_str = new_str.replace("\n", "")
+    original = value
+    new_str = ""
+    first = True
+    while new_str is not original:
+        if first:
+            first = False
+        else:
+            original = new_str
+        new_str = original.strip()
+        new_str = new_str.replace("&nbsp;", "")
+        new_str = new_str.replace("  ", " ")
+        new_str = new_str.replace("\t", "")
+        new_str = new_str.replace("\n", "")
     return new_str
 
 

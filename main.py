@@ -30,6 +30,8 @@ from helpers.sheetmaker import make_excel_sheet
 #     not all of these are serious needs, requirements, or fixes
 #     as much as they are probably spots i have left notes of
 #     what COULD be done or what hasn't been fully tested
+# - adding testcases for selenium functions using hidden github values
+#     could still login using headless functionality and secret key values
 
 config = configparser.ConfigParser()
 config.read("config.ini")

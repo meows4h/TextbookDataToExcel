@@ -133,12 +133,7 @@ def get_table(driver):
 
 
 # TODO
-# this needs SEVERE checking
-# first thought is the search link could possibly be incorrect?
-# maybe searching via MMS ID is improper?
-# patterns kristin told me:
-# NONE of the Ebooks were caught, ONLY CDLs, but not ALL CDLs
-# Print books were ONLY from our MAIN collection
+# may need further testing
 def pull_one_search(driver, mms_list):
     """Opens a OneSearch tab to double check that the MMS ID exists within Primo.
     Takes a list and returns a list, though only used with single IDs right now."""
@@ -479,6 +474,11 @@ def process_analytics(analytics_driver, isbn):
                                 for section in process_list:
                                     if "user".upper() in section:
                                         users = get_int(section.split(" ")[0])
+            
+            # adding a failstate to ensure these values are marked as unknown
+            # and can be easily removed via find & replace
+            if users == -1:
+                users = "?"
 
             if mms_id not in data:
                 data[mms_id] = {
