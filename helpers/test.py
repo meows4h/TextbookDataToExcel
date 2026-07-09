@@ -1,4 +1,5 @@
 import unittest
+import os
 import helpers.analytics as alma
 import helpers.bookstore as book
 import helpers.classes as classes
@@ -14,9 +15,6 @@ import helpers.utilities as util
 # skipping selenium oriented functions as they require logging in via the interface
 # this could be done in headless mode w/ more looking over the HTML of the log in
 # pages, but focusing on the core logic functions for now
-
-# similarly, export and import testing implementations may be done later as they
-# likely will not be changing soon and are currently functional
 
 class AnalyticsTest(unittest.TestCase):
     """Testing the analytics.py file."""
@@ -179,6 +177,13 @@ class BookstoreTest(unittest.TestCase):
         message = self.get_clean_msg(result, expected)
         self.assertEqual(result, expected, message)
 
+    def test_clean(self):
+        text = "  \t\n\n something \t    t here   \t   "
+        result = book.str_clean(text)
+        expected = "something t here"
+        message = self.get_clean_msg(result, expected)
+        self.assertEqual(result, expected, message)
+
     # get_page_soup selenium function
 
     # testing get_link
@@ -187,7 +192,32 @@ class BookstoreTest(unittest.TestCase):
 
     # pull_textbook_data uses selenium
 
-    # pull_data import function
+    # pull_info import function
+    def test_pull_info(self):
+        directory = ["testing", "test_bookstore.csv"]
+        path = get_directory(directory)
+        table = book.pull_info(path)
+
+        term = "2022-Summer"
+        subject = "MTH : Mathematics"
+        code = "101"
+        section = "001"
+        instructor = "LastName, FirstName"
+        title = "Intro to Math Textbook"
+        edition = "11"
+        author = "Textbook Author"
+        isbn = "978-1-11-111"
+        publisher = "Textbook Publisher"
+        req = "Optional"
+        sku = "1"
+        comments = "Some Comment"
+        requisition = "2/2/2022 2:22:22 PM"
+
+        example_row = [term, subject, code, section, instructor, title, edition, author, isbn, publisher, req, sku, comments, requisition]
+        row = table[0]
+        
+        for idx, cell in enumerate(row):
+            self.assertEqual(cell, example_row[idx], f"pull_info: {cell} doesn't equal {example_row[idx]}")
 
 
 class ClassesTest(unittest.TestCase):
@@ -289,7 +319,43 @@ class EmailsTest(unittest.TestCase):
 
 class EnrollTest(unittest.TestCase):
     """Testing the enrollment.py file."""
+    def setUp(self):
+        directory = ["testing", "test_enrollment.csv"]
+        self.enroll_dir = get_directory(directory)
+        self.instructor_dict = {"Name1 Name2": "Name@email.com"}
 
+    def check_instructor_dict(self, instr_dict, name, email):
+        if name not in instr_dict:
+            return False
+        if email not in instr_dict[name]:
+            return False
+        return True
+
+    def test_get_enrollment_without(self):
+        instr_dict, enroll_dict = enroll.get_enrollment_data(self.enroll_dir)
+        self.assertIn("MTH101", enroll_dict, "")
+        self.assertIn("1", enroll_dict["MTH101"], "")
+
+        ex_name = "LastName, FirstName"
+        ex_email = "FirstName.LastName@example.edu"
+        check = self.check_instructor_dict(instr_dict, ex_name, ex_email)
+        self.assertTrue(check, "")
+
+    def test_get_enrollment_with(self):
+        instr_dict, enroll_dict = enroll.get_enrollment_data(self.enroll_dir, self.instructor_dict)
+        self.assertIn("MTH101", enroll_dict, "")
+        self.assertIn("1", enroll_dict["MTH101"], "")
+
+        ex_name = "LastName, FirstName"
+        ex_email = "FirstName.LastName@example.edu"
+        check = self.check_instructor_dict(instr_dict, ex_name, ex_email)
+        self.assertTrue(check, "")
+
+        for name in self.instructor_dict:
+            email = self.instructor_dict[name]
+            check = self.check_instructor_dict(self.instructor_dict, name, email)
+            self.assertTrue(check, "")
+        
 
 class OutlookTest(unittest.TestCase):
     """Testing the grabber.py file."""
@@ -317,3 +383,10 @@ class SheetTest(unittest.TestCase):
 
 class UtilTest(unittest.TestCase):
     """Testing the utilities.py file."""
+
+
+def get_directory(folder_list):
+    curr_dir = os.path.dirname(__file__)
+    for file in folder_list:
+        curr_dir = os.path.join(curr_dir, file)
+    return curr_dir
