@@ -96,10 +96,10 @@ Takes in the instructor name, email, as well as course, section, and book inform
 Adds books to a given course section for each professor.
 ### update_excel
 Updates the main sheet with marking off what emails have been successfully created.
-### write_to_excel
-Writes the email data to an Excel sheet to be used with PowerAutomate.
 ### create_email_excel
 Processes all the Instructor data to create the table to be used to write it into an Excel sheet.
+### write_to_excel
+Writes the email data to an Excel sheet to be used with PowerAutomate.
 
 ## enrollment.py
 Handles pulling the relevant data from the enrollment csv file in order to get the maximum enrollment values.

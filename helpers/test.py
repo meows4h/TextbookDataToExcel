@@ -192,10 +192,99 @@ class BookstoreTest(unittest.TestCase):
 
 class ClassesTest(unittest.TestCase):
     """Testing the classes.py file."""
+    def setUp(self):
+        analytics_data = {"Physical MMS Id": {
+            "Types": ["Physical"],
+            "Copies": [2],
+            "Users": [0],
+            "CDL": [False],
+            "Link": "https://www.example.com",
+            "Year": "2024",
+            "Location": "Valley Library BIB"
+        },
+        "Ebook MMS Id": {
+            "Types": ["Electronic"],
+            "Copies": [0],
+            "Users": [4],
+            "CDL": [True],
+            "Link": "https://www.example2.com",
+            "Platform": "",
+            "Year": "2020"
+        }}
+        book_info = {
+            "Title": "Book Title",
+            "Author": "Book Author",
+            "Edition": "Book Edition",
+            "Instructor": "Example Name",
+            "Email": "Example Email",
+            "Course": "Example Course",
+            "Section": 1,
+            "Enroll": [1, "C"],
+            "ISBN": 1,
+            "Publisher": "Book Publisher",
+            "Req": "Optional",
+            "RequiDate": "Requisition Date",
+            "Comment": "Example Comment",
+            "Analytics": analytics_data,
+        }
+        self.book = classes.Book(book_info)
+
+    # Book Class testing
+
+    # add_course method
+    def test_add_course(self):
+        course_name = "Test Course"
+        section_num = "999"
+        instructor = "Test Name"
+        email = "Test Email"
+        enroll_data = [99, "D"]
+
+        self.book.add_course(course_name, section_num, instructor, email, enroll_data)
+        self.assertEqual(len(self.book.courses), 2, "add_course: Number of courses is incorrect.")
+        self.assertEqual(len(self.book.sections), 2, "add_course: Number of sections is incorrect.")
+        self.assertEqual(self.book.sec_size[-1], 1, "add_course: Incorrect sec_size array number.")
+        self.assertEqual(self.book.total_enroll, 100, "add_course: Total enrollment count is incorrect.")
+
+    # add_section method
+
+    # add_isbn method
+
+    # add_enroll method
+
+    # add_required method
+
+    # End Book Class testing
+
+    # get_max_index testing
+
+    # get_max_courses testing
+
+    # get_max_sections_list testing
+
+    # process_book testing
+
+    # process_sections testing
+
+    # process_isbns testing
+
+    # import_data testing
 
 
 class EmailsTest(unittest.TestCase):
     """Testing the emails.py file."""
+
+    # Book Class testing
+
+    # Instructor Class testing
+
+    # End Instructor Class testing
+
+    # update_excel testing
+    # this needs a setup to run sheetmaker and import other information?
+
+    # create_email_excel testing
+
+    # write_to_excel testing -- this is an export function and should be fine
 
 
 class EnrollTest(unittest.TestCase):

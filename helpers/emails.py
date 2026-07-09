@@ -60,22 +60,12 @@ def update_excel(directory, data, sheet_name):
     workbook.save(directory)
 
 
-def write_to_excel(directory, export_data, sheetname):
-    """Exports given data to given directory with given sheetname."""
-    dataframe = pd.DataFrame(data=export_data)
-    writer = pd.ExcelWriter(directory, engine="xlsxwriter")
-    dataframe.to_excel(
-        writer, sheet_name=sheetname, startrow=1, header=False, index=False
-    )
-    worksheet = writer.sheets[sheetname]
-    max_row, max_col = dataframe.shape
-    column_settings = []
-    for header in dataframe.columns:
-        column_settings.append({"header": header})
-    worksheet.add_table(0, 0, max_row, max_col - 1, {"columns": column_settings})
-    worksheet.set_column(0, max_col - 1, 12)
-    writer.close()
+# the goal here should be to load book data into a book object,
+# then for each instance of an instructor for that book,
+# assign the book reference to them with the course + section
 
+# if instructor already exists, just add the other information
+# otherwise, make new instructor
 
 # TODO
 # rewrite this into smaller functions to break it apart a little
@@ -409,9 +399,18 @@ def create_email_excel(input_sheet=None, file_name=""):
     print("Email sheet exported. Main sheet updated.")
 
 
-# the goal here should be to load book data into a book object,
-# then for each instance of an instructor for that book,
-# assign the book reference to them with the course + section
-
-# if instructor already exists, just add the other information
-# otherwise, make new instructor
+def write_to_excel(directory, export_data, sheetname):
+    """Exports given data to given directory with given sheetname."""
+    dataframe = pd.DataFrame(data=export_data)
+    writer = pd.ExcelWriter(directory, engine="xlsxwriter")
+    dataframe.to_excel(
+        writer, sheet_name=sheetname, startrow=1, header=False, index=False
+    )
+    worksheet = writer.sheets[sheetname]
+    max_row, max_col = dataframe.shape
+    column_settings = []
+    for header in dataframe.columns:
+        column_settings.append({"header": header})
+    worksheet.add_table(0, 0, max_row, max_col - 1, {"columns": column_settings})
+    worksheet.set_column(0, max_col - 1, 12)
+    writer.close()
