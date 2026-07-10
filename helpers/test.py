@@ -1,5 +1,6 @@
 import unittest
 import os
+import random
 import helpers.analytics as alma
 import helpers.bookstore as book
 import helpers.classes as classes
@@ -178,7 +179,7 @@ class BookstoreTest(unittest.TestCase):
         self.assertEqual(result, expected, message)
 
     def test_clean(self):
-        text = "  \t\n\n something \t    t here   \t   "
+        text = "  \t\n\n something \t    t  here   \t   "
         result = book.str_clean(text)
         expected = "something t here"
         message = self.get_clean_msg(result, expected)
@@ -223,13 +224,14 @@ class BookstoreTest(unittest.TestCase):
 class ClassesTest(unittest.TestCase):
     """Testing the classes.py file."""
     def setUp(self):
+        # individiual preset testing
         analytics_data = {"Physical MMS Id": {
             "Types": ["Physical"],
             "Copies": [2],
             "Users": [0],
             "CDL": [False],
             "Link": "https://www.example.com",
-            "Year": "2024",
+            "Year": 2024,
             "Location": "Valley Library BIB"
         },
         "Ebook MMS Id": {
@@ -239,7 +241,7 @@ class ClassesTest(unittest.TestCase):
             "CDL": [True],
             "Link": "https://www.example2.com",
             "Platform": "",
-            "Year": "2020"
+            "Year": 2020
         }}
         book_info = {
             "Title": "Book Title",
@@ -259,12 +261,111 @@ class ClassesTest(unittest.TestCase):
         }
         self.book = classes.Book(book_info)
 
+    def generate_book_list(self):
+        # randomized testing
+        self.book_list = []
+        self.course_list = []
+        self.section_list = []
+
+        # course_templates = ["MTH", "BI", "WGSS", "CHEM", "GEO"]
+        section_templates = [1, 100, 200, 300, 400, 500]
+        campus_templates = ["C", "D", "N", "B", "Z", "L", "H", "PDX"]
+        platform_templates = ["OverDrive", "EBSCO", "Elsevier", "ProQuest", ""]
+        book_count = get_random(5, 100)
+        for num in range(1, book_count + 1):
+            base_course = "Course 0"
+            base_section = section_templates[get_random(0, len(section_templates) - 1)]
+            base_enroll = [get_random(0, 150), campus_templates[get_random(0, len(campus_templates ) - 1)]]
+            edition = get_random(0, 20)
+            # sometimes the edition value is left empty
+            if edition == 0:
+                edition = None
+            title = f"Book Title {num}"
+            author = f"Book Author {num}"
+            instructor = f"Example Name {num}"
+            email = f"Example Email {num}"
+            publisher = f"Book Publisher {num}"
+            req_check = get_random(1, 2)
+            if req_check == 2:
+                requirements = "Required"
+            else:
+                requirements = "Optional"
+
+            base_analytics = {}
+            rand = get_random(1, 3)
+            if rand >= 2:
+                base_analytics[f"{num}Physical"] = {
+                    "Types": ["Physical"],
+                    "Copies": [get_random(1, 11)],
+                    "Users": [0],
+                    "CDL": [False],
+                    "Link": "https://www.example3.com",
+                    "Year": 2000 + get_random(0, 25),
+                    "Location": "Valley Library BIB"
+                }
+            
+            rand = get_random(1, 3)
+            if rand >= 2:
+                rand = get_random(1, 2)
+                if rand >= 2:
+                    is_cdl = True
+                else:
+                    is_cdl = False
+                base_platform = platform_templates[get_random(0, len(platform_templates) - 1)]
+                base_analytics[f"{num}Electronic"] = {
+                    "Types": ["Electronic"],
+                    "Copies": [0],
+                    "Users": [get_random(1, 11)],
+                    "CDL": [is_cdl],
+                    "Link": "https://www.example4.com",
+                    "Platform": base_platform,
+                    "Year": 2000 + get_random(0, 25)
+                }
+
+            base_info = {
+                "Title": title,
+                "Author": author,
+                "Edition": edition,
+                "Instructor": instructor,
+                "Email": email,
+                "Course": base_course,
+                "Section": base_section,
+                "Enroll": base_enroll,
+                "ISBN": num,
+                "Publisher": publisher,
+                "Req": requirements,
+                "RequiDate": "2/2/2022 2:22:22 PM",
+                "Comment": "Example Comment",
+                "Analytics": base_analytics,
+            }
+
+            new_book = classes.Book(base_info)
+
+            course_count = get_random(1, 6)
+            for course in range(1, course_count + 1):
+                course_name = f"Course {course}"
+                course_section = section_templates[get_random(0, len(section_templates) - 1)]
+                course_enroll = [get_random(0, 150), campus_templates[get_random(0, len(campus_templates ) - 1)]]
+                new_book.add_course(course_name, course_section, instructor, email, course_enroll)
+
+                section_count = get_random(1, 30)
+                for sec in range(1, section_count + 1):
+                    sec_num = course_section + sec
+                    sec_enroll = [get_random(0, 150), campus_templates[get_random(0, len(campus_templates ) - 1)]]
+                    new_book.add_section(course_name, sec_num, instructor, email, sec_enroll)
+
+                self.section_list.append(section_count)
+            
+            # need to add one for the initial set
+            self.course_list.append(course_count + 1)
+            self.book_list.append(new_book)
+
     # Book Class testing
 
     # add_course method
     def test_add_course(self):
         course_name = "Test Course"
-        section_num = "999"
+        section_num = 999
         instructor = "Test Name"
         email = "Test Email"
         enroll_data = [99, "D"]
@@ -276,20 +377,77 @@ class ClassesTest(unittest.TestCase):
         self.assertEqual(self.book.total_enroll, 100, "add_course: Total enrollment count is incorrect.")
 
     # add_section method
+    def test_add_section(self):
+        course_name = "Example Course"
+        section_num = 999
+        instructor = "Test Name"
+        email = "Test Email"
+        enroll_data = [99, "D"]
+
+        self.book.add_section(course_name, section_num, instructor, email, enroll_data)
+        self.assertEqual(len(self.book.courses), 1, "add_section: Number of courses is incorrect.")
+        # adding the 0 index as book.sections is a list of lists of sections, with the index
+        # corresponding to the index of the course index
+        self.assertEqual(len(self.book.sections[0]), 2, "add_section: Number of sections is incorrect.")
+        self.assertEqual(self.book.sec_size[-1], 2, "add_section: Incorrect sec_size array number.")
+        self.assertEqual(self.book.total_enroll, 100, "add_section: Total enrollment count is incorrect.")
 
     # add_isbn method
+    def test_add_isbn(self):
+        isbn = 2
+        self.book.add_isbn(isbn)
+        self.assertEqual(len(self.book.isbns), 2, "add_isbn: Number of ISBNs is incorrect.")
+        self.assertIn(2, self.book.isbns, "add_isbn: Missing ISBN number.")
 
     # add_enroll method
+    def test_add_enroll(self):
+        enroll_data = [99, "D"]
+        self.book.add_enroll(enroll_data[1], enroll_data[0])
+        self.assertEqual(self.book.total_enroll, 100, "add_enroll: Total enrollment count is incorrect.")
+        self.assertIn("Ecampus", self.book.campuses, "add_enroll: Missing one of the correct campuses.")
 
     # add_required method
+    def test_add_required(self):
+        self.book.add_required()
+        self.assertEqual("Required", self.book.requirement, "add_required: Value did not update properly.")
 
     # End Book Class testing
 
     # get_max_index testing
+    def test_max_index(self):
+        # setup
+        for num in range(1, 5):
+            course_name = f"Test Course {num}"
+            base_section = 1
+            base_enroll = [99, "D"]
+            instructor = "Test Name"
+            email = "Test Email"
+            self.book.add_course(course_name, base_section, instructor, email, base_enroll)
+            for sec in range(1, num):
+                sec_num = base_section + sec
+                sec_enroll = [sec + num, "C"]
+                self.book.add_section(course_name, sec_num, instructor, email, sec_enroll)
+
+        max_list = classes.get_max_index(self.book.sec_size)
+        # it finds the first index first, meaning the matching sizes are done by lowest index
+        expected = [4, 3, 2, 0, 1]
+        self.assertEqual(expected, max_list, "get_max_index: Course maximum section count order does not match expected values.")
 
     # get_max_courses testing
+    def test_max_courses(self):
+        self.generate_book_list()
+        expected_num = max(self.course_list)
+        most_courses = classes.get_max_courses(self.book_list)
+        self.assertEqual(most_courses, expected_num, "")
 
     # get_max_sections_list testing
+    def test_max_sections_list(self):
+        self.generate_book_list()
+        expected_size = max(self.course_list)
+
+        most_courses = classes.get_max_courses(self.book_list)
+        section_size_list = classes.get_max_sections_list(self.book_list, most_courses)
+        # TODO
 
     # process_book testing
 
@@ -390,3 +548,7 @@ def get_directory(folder_list):
     for file in folder_list:
         curr_dir = os.path.join(curr_dir, file)
     return curr_dir
+
+
+def get_random(low, high):
+    return random.randint(low, high)
