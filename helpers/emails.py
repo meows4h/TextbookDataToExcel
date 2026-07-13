@@ -58,6 +58,7 @@ def update_excel(directory, data, sheet_name):
                     cell.value = datetime.datetime.now()
                     break
     workbook.save(directory)
+    workbook.close()
 
 
 # the goal here should be to load book data into a book object,

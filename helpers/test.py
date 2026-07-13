@@ -2,6 +2,8 @@ import unittest
 import os
 import random
 import pandas as pd
+import openpyxl
+import datetime
 
 import helpers.analytics as alma
 import helpers.bookstore as book
@@ -631,6 +633,70 @@ class EmailsTest(unittest.TestCase):
 
     # update_excel testing
     # this needs a setup to run sheetmaker and import other information?
+    def test_update_excel(self):
+        bookstore_dir = get_directory(["testing", "test_bookstore.csv"])
+        output_dir = get_directory(["testing", "test_output.xlsx"])
+        
+        workbook = openpyxl.load_workbook(output_dir)
+        sheet_name = "Test"
+        worksheet = workbook[sheet_name]
+
+        header_dict, header_list = util.get_sheet_headers()
+
+        # generate test data
+        email_sent_list = []
+        email_ready_list = []
+        test_time = datetime.datetime.now()
+        for idx, row in enumerate(worksheet.iter_rows(min_row=2)):
+            if idx >= 151:
+                break
+            prior_check = False
+            for cell in row:
+                col = cell.column_letter
+                if worksheet[f"{col}1"].value == header_dict["ReadingList"]:
+                    num = get_random(1, 2)
+                    if num == 1:
+                        cell.value = True
+                        prior_check = True
+                        email_ready_list.append(idx)
+                    else:
+                        cell.value = False
+                elif worksheet[f"{col}1"].value == header_dict["EmailDate"]:
+                    num = get_random(1, 2)
+                    if num == 1 or prior_check == False:
+                        cell.value = None
+                    else:
+                        email_ready_list.pop()
+                        email_sent_list.append(idx)
+                        cell.value = test_time
+
+        workbook.save(output_dir)
+        workbook.close()
+
+        emails.update_excel(output_dir, email_ready_list, sheet_name)
+
+        final_email_list = sorted(email_ready_list + email_sent_list)
+
+        workbook = openpyxl.load_workbook(output_dir)
+        worksheet = workbook[sheet_name]
+        for idx, row in enumerate(worksheet.iter_rows(min_row=2)):
+            if idx >= 151:
+                break
+            reading_val = None
+            email_val = None
+            for cell in row:
+                col = cell.column_letter
+                if worksheet[f"{col}1"].value == header_dict["ReadingList"]:
+                    reading_val = cell.value
+                elif worksheet[f"{col}1"].value == header_dict["EmailDate"]:
+                    email_val = cell.value
+            if idx in final_email_list:
+                self.assertTrue(reading_val)
+                self.assertTrue(email_val)
+            else:
+                self.assertFalse(reading_val)
+                self.assertFalse(email_val)
+
 
     # create_email_excel testing
 
