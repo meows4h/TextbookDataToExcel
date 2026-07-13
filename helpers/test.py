@@ -225,7 +225,7 @@ class ClassesTest(unittest.TestCase):
     """Testing the classes.py file."""
     def setUp(self):
         # individiual preset testing
-        analytics_data = {"Physical MMS Id": {
+        self.analytics_data = {"Physical MMS Id": {
             "Types": ["Physical"],
             "Copies": [2],
             "Users": [0],
@@ -243,7 +243,7 @@ class ClassesTest(unittest.TestCase):
             "Platform": "",
             "Year": 2020
         }}
-        book_info = {
+        self.book_info = {
             "Title": "Book Title",
             "Author": "Book Author",
             "Edition": "Book Edition",
@@ -257,9 +257,9 @@ class ClassesTest(unittest.TestCase):
             "Req": "Optional",
             "RequiDate": "Requisition Date",
             "Comment": "Example Comment",
-            "Analytics": analytics_data,
+            "Analytics": self.analytics_data,
         }
-        self.book = classes.Book(book_info)
+        self.book = classes.Book(self.book_info)
 
     def generate_book_list(self):
         # randomized testing
@@ -273,7 +273,7 @@ class ClassesTest(unittest.TestCase):
         platform_templates = ["OverDrive", "EBSCO", "Elsevier", "ProQuest", ""]
         book_count = get_random(5, 100)
         for num in range(1, book_count + 1):
-            base_course = "Course 0"
+            base_course = f"Course 0"
             base_section = section_templates[get_random(0, len(section_templates) - 1)]
             base_enroll = [get_random(0, 150), campus_templates[get_random(0, len(campus_templates ) - 1)]]
             edition = get_random(0, 20)
@@ -341,11 +341,24 @@ class ClassesTest(unittest.TestCase):
 
             new_book = classes.Book(base_info)
 
+            book_sections = []
+
+            # generating sections for the already existing base section
+            section_count = get_random(1, 30)
+            for sec in range(1, section_count + 1):
+                course_section = section_templates[get_random(0, len(section_templates) - 1)]
+                sec_num = course_section + sec
+                sec_enroll = [get_random(0, 150), campus_templates[get_random(0, len(campus_templates) - 1)]]
+                new_book.add_section(base_course, sec_num, instructor, email, sec_enroll)
+
+            book_sections.append(section_count + 1)
+
+            # generate remaining courses + sections
             course_count = get_random(1, 6)
             for course in range(1, course_count + 1):
                 course_name = f"Course {course}"
                 course_section = section_templates[get_random(0, len(section_templates) - 1)]
-                course_enroll = [get_random(0, 150), campus_templates[get_random(0, len(campus_templates ) - 1)]]
+                course_enroll = [get_random(0, 150), campus_templates[get_random(0, len(campus_templates) - 1)]]
                 new_book.add_course(course_name, course_section, instructor, email, course_enroll)
 
                 section_count = get_random(1, 30)
@@ -354,7 +367,10 @@ class ClassesTest(unittest.TestCase):
                     sec_enroll = [get_random(0, 150), campus_templates[get_random(0, len(campus_templates ) - 1)]]
                     new_book.add_section(course_name, sec_num, instructor, email, sec_enroll)
 
-                self.section_list.append(section_count)
+                book_sections.append(section_count + 1)
+            
+            book_sections = sorted(book_sections, reverse=True)
+            self.section_list.append(book_sections)
             
             # need to add one for the initial set
             self.course_list.append(course_count + 1)
@@ -447,11 +463,35 @@ class ClassesTest(unittest.TestCase):
 
         most_courses = classes.get_max_courses(self.book_list)
         section_size_list = classes.get_max_sections_list(self.book_list, most_courses)
-        # TODO
+
+        max_list_size = 0
+        for sec_list in self.section_list:
+            max_list_size = max(len(sec_list), max_list_size)
+
+        expected_list = []
+        for idx in range(0, max_list_size + 1):
+            max_idx = 0
+            for sec_list in self.section_list:
+
+                if len(sec_list) - 1 >= idx:
+                    max_idx = max(sec_list[idx], max_idx)
+            expected_list.append(max_idx)
+
+        for idx, sec_size in enumerate(section_size_list):
+            self.assertGreater(expected_size, idx)
+            self.assertEqual(sec_size, expected_list[idx])
 
     # process_book testing
+    def test_process_book(self):
+        self.generate_book_list()
+        local_list = classes.process_book(self.book_list, self.book_info)
+        self.book_list.append(self.book)
+        for book_idx in range(0, len(local_list)):
+            self.assertEqual(local_list[book_idx], self.book_list[book_idx])
 
     # process_sections testing
+    def test_process_sections(self):
+        self.assertTrue(True)
 
     # process_isbns testing
 
