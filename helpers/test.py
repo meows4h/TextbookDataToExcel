@@ -1,6 +1,8 @@
 import unittest
 import os
 import random
+import pandas as pd
+
 import helpers.analytics as alma
 import helpers.bookstore as book
 import helpers.classes as classes
@@ -12,6 +14,8 @@ import helpers.helpergui as helpgui
 import helpers.modes as modes
 import helpers.output as output
 import helpers.utilities as util
+
+from warnings import simplefilter
 
 # skipping selenium oriented functions as they require logging in via the interface
 # this could be done in headless mode w/ more looking over the HTML of the log in
@@ -472,7 +476,6 @@ class ClassesTest(unittest.TestCase):
         for idx in range(0, max_list_size + 1):
             max_idx = 0
             for sec_list in self.section_list:
-
                 if len(sec_list) - 1 >= idx:
                     max_idx = max(sec_list[idx], max_idx)
             expected_list.append(max_idx)
@@ -489,21 +492,140 @@ class ClassesTest(unittest.TestCase):
         for book_idx in range(0, len(local_list)):
             self.assertEqual(local_list[book_idx], self.book_list[book_idx])
 
+    # process_courses testing
+    def test_process_courses(self):
+        simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
+        simplefilter(action="ignore", category=FutureWarning)
+
+        self.generate_book_list()
+        dataframe = pd.DataFrame()
+        head_names, main_headers = util.get_sheet_headers()
+        total_cols = 0
+        for header in main_headers:
+            dataframe[f"{header}"] = []
+            total_cols += 1
+        format_headers = util.get_format_headers()
+
+        max_len = 0
+        for book in self.book_list:
+            max_len = max(len(book.courses), max_len)
+        total_cols += max_len
+
+        max_courses = classes.process_courses(self.book_list, format_headers, dataframe)
+        self.assertEqual(max_len, max_courses)
+        self.assertEqual(total_cols, len(dataframe.columns))
+
     # process_sections testing
     def test_process_sections(self):
-        self.assertTrue(True)
+        simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
+        simplefilter(action="ignore", category=FutureWarning)
+
+        self.generate_book_list()
+        dataframe = pd.DataFrame()
+        head_names, main_headers = util.get_sheet_headers()
+        total_cols = 0
+        for header in main_headers:
+            dataframe[f"{header}"] = []
+            total_cols += 1
+        format_headers = util.get_format_headers()
+
+        max_len = 0
+        for book in self.book_list:
+            max_len = max(len(book.courses), max_len)
+        total_cols += max_len
+
+        most_courses = classes.get_max_courses(self.book_list)
+        section_size_list = classes.get_max_sections_list(self.book_list, most_courses)
+        for sec_size in section_size_list:
+            total_cols += sec_size * 4
+
+        max_courses = classes.process_courses(self.book_list, format_headers, dataframe)
+        classes.process_sections(self.book_list, format_headers, max_courses, dataframe)
+
+        self.assertEqual(total_cols, len(dataframe.columns))
 
     # process_isbns testing
+    def test_process_isbns(self):
+        simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
+        simplefilter(action="ignore", category=FutureWarning)
+
+        self.generate_book_list()
+        dataframe = pd.DataFrame()
+        head_names, main_headers = util.get_sheet_headers()
+        total_cols = 0
+        for header in main_headers:
+            dataframe[f"{header}"] = []
+            total_cols += 1
+        format_headers = util.get_format_headers()
+
+        max_len = 0
+        max_isbn = 0
+        for book in self.book_list:
+            max_len = max(len(book.courses), max_len)
+            max_isbn = max(len(book.isbns), max_isbn)
+        total_cols += max_len
+
+        most_courses = classes.get_max_courses(self.book_list)
+        section_size_list = classes.get_max_sections_list(self.book_list, most_courses)
+        for sec_size in section_size_list:
+            total_cols += sec_size * 4
+
+        max_courses = classes.process_courses(self.book_list, format_headers, dataframe)
+        classes.process_sections(self.book_list, format_headers, max_courses, dataframe)
+        classes.process_isbns(self.book_list, head_names, main_headers, dataframe)
+
+        self.assertEqual(total_cols, len(dataframe.columns))
 
     # import_data testing
+    def test_import_data(self):
+        simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
+        simplefilter(action="ignore", category=FutureWarning)
+
+        self.generate_book_list()
+        dataframe = pd.DataFrame()
+        head_names, main_headers = util.get_sheet_headers()
+        for header in main_headers:
+            dataframe[f"{header}"] = []
+        format_headers = util.get_format_headers()
+
+        max_courses = classes.process_courses(self.book_list, format_headers, dataframe)
+        classes.process_sections(self.book_list, format_headers, max_courses, dataframe)
+        classes.process_isbns(self.book_list, head_names, main_headers, dataframe)
+        dataframe = classes.import_data(self.book_list, format_headers, head_names, dataframe)
+        self.assertEqual(len(self.book_list), len(dataframe))
 
 
 class EmailsTest(unittest.TestCase):
     """Testing the emails.py file."""
+    def setUp(self):
+        book_title = ""
+        book_author = ""
+        book_edition = ""
+        book_year = ""
+        book_access = {}
+        self.emails_book = emails.Book(book_title, book_author, book_edition, book_year, book_access)
 
-    # Book Class testing
+        inst_name = ""
+        inst_email = ""
+        inst_course = ""
+        inst_section = ""
+        self.emails_instructor = emails.Instructor(inst_name, inst_email, inst_course, inst_section, self.emails_book)
 
     # Instructor Class testing
+
+    # add_book method
+    def test_add_book(self):
+        title = ""
+        author = ""
+        edition = ""
+        year = ""
+        access = {}
+        local_book = emails.Book(title, author, edition, year, access)
+
+        course = ""
+        section = ""
+        self.emails_instructor.add_book(course, section, local_book)
+        
 
     # End Instructor Class testing
 
