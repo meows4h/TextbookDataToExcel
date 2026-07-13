@@ -290,10 +290,10 @@ def create_email_excel(input_sheet=None, file_name=""):
 
                     book_str += "<ul>"
 
-                    print(book.access)
+                    # print(book.access)
                     for access_data in book.access:
                         link = book.access[access_data]["Link"]
-                        print(book.access[access_data])
+                        # print(book.access[access_data])
 
                         if access_data == "Ebook":
                             user_num = book.access[access_data]["Number"]
@@ -397,7 +397,7 @@ def create_email_excel(input_sheet=None, file_name=""):
 
     write_to_excel(output_path, final_data, "Email List")
     update_excel(input_path, book_idx, process_sheet)
-    print("Email sheet exported. Main sheet updated.")
+    # print("Email sheet exported. Main sheet updated.")
 
 
 def write_to_excel(directory, export_data, sheetname):

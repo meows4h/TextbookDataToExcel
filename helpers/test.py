@@ -699,6 +699,58 @@ class EmailsTest(unittest.TestCase):
 
 
     # create_email_excel testing
+    def test_create_emails(self):
+        output_dir = get_directory(["testing", "test_output.xlsx"])
+        
+        workbook = openpyxl.load_workbook(output_dir)
+        sheet_name = "Test"
+        worksheet = workbook[sheet_name]
+
+        header_dict, header_list = util.get_sheet_headers()
+
+        # generate test data
+        email_sent_list = []
+        email_ready_list = []
+        test_time = datetime.datetime.now()
+        for idx, row in enumerate(worksheet.iter_rows(min_row=2)):
+            if idx >= 151:
+                break
+            prior_check = False
+            for cell in row:
+                col = cell.column_letter
+                if worksheet[f"{col}1"].value == header_dict["ReadingList"]:
+                    num = get_random(1, 2)
+                    if num == 1:
+                        cell.value = True
+                        prior_check = True
+                        email_ready_list.append(idx)
+                    else:
+                        cell.value = False
+                elif worksheet[f"{col}1"].value == header_dict["EmailDate"]:
+                    num = get_random(1, 2)
+                    if num == 1 or prior_check == False:
+                        cell.value = None
+                    else:
+                        email_ready_list.pop()
+                        email_sent_list.append(idx)
+                        cell.value = test_time
+
+        workbook.save(output_dir)
+        workbook.close()
+        emails.create_email_excel("Test", output_dir)
+        
+        final_email_list = sorted(email_ready_list + email_sent_list)
+        email_dir = get_directory(["..", "email_output.xlsx"])
+
+        email_workbook = openpyxl.load_workbook(email_dir)
+        email_worksheet = email_workbook["Email List"]
+
+        # change this implementation to check each row, each cell, check header like normal
+        # split the name cell into the number on its own and then verify the number in the list
+        # for number in email_ready_list:
+        #     for row in email_worksheet.iter_rows(min_row=2):
+        #         self.assertEqual(row["Name"], f"Example Name {number}")
+
 
     # write_to_excel testing -- this is an export function and should be fine
 
