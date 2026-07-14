@@ -6,7 +6,7 @@ from helpers.utilities import get_campus
 class Book:
     """Object that stores relevant book information to be used to format and
     configure a dataframe. Takes in a dictionary to construct the base
-    object. See main.py for the book_info dictionary structure."""
+    object. See sheetmaker.py for the book_info dictionary structure."""
 
     def __init__(self, info):
         # bookstore information
@@ -57,7 +57,10 @@ class Book:
 
     def add_section(self, course, section, instructor, email, enroll):
         """Adds section information to book object."""
-        idx = self.courses.index(course)
+        try:
+            idx = self.courses.index(course)
+        except ValueError as err:
+            print(f"Course Index not found: {err}")
         self.sections[idx].append([section, instructor, email, enroll[0]])
         self.sec_size[idx] += 1
         self.add_enroll(enroll[1], enroll[0])
@@ -87,11 +90,13 @@ class Book:
 
 
 def get_max_index(len_list):
-    """Gets the index of the largest course based on number of sections."""
+    """Gets a list of indices of the largest courses in order based on number of sections."""
     output = []
     temp = len_list.copy()
     while max(temp) > 0:
+        # append the index of the largest course
         output.append(temp.index(max(temp)))
+        # set that course size to 0 before going to the next
         temp[output[-1]] = 0
     return output
 
@@ -105,7 +110,7 @@ def get_max_courses(book_list):
 
 
 def get_max_sections_list(book_list, course_amt):
-    """Gets the list of section counts by course for a book."""
+    """Gets the values for how many section columns to put per course numbering."""
     sec_len = []
     for idx in range(course_amt):
         sec_len.append(0)
@@ -120,7 +125,7 @@ def get_max_sections_list(book_list, course_amt):
 
 
 def process_book(book_list, book_dict):
-    """Processed incoming book information and crates / adds book
+    """Processed incoming book information and creates / adds book
     information to the main list of book objects."""
     book = None
     for search_book in book_list:

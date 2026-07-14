@@ -26,7 +26,7 @@ def get_enrollment_data(dir, instructor_dict={}):
         elif section not in enrollment_dict[f"{course}"]:
             enrollment_dict[f"{course}"][f"{section}"] = [max_enroll, campus]
         else:
-            print("I don't think these cases exist; will write the logic")
+            print("I don't think these cases exist (Multiple enrollments for course and section)")
 
         # instructor things
         instructor = df["PRIMARY_INSTRUCTOR"][idx]

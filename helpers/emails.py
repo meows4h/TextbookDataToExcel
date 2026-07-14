@@ -30,6 +30,9 @@ class Instructor:
         self.data = {course: {section: [book]}}
 
     def add_book(self, course, section, book):
+        # if we have the course & section, add book to it
+        # if we have course, but not section, make new section with book
+        # if neither, make new course and section dictionary
         if course in self.data and section in self.data[course]:
             self.data[course][section].append(book)
         elif course in self.data:
@@ -58,27 +61,19 @@ def update_excel(directory, data, sheet_name):
                     cell.value = datetime.datetime.now()
                     break
     workbook.save(directory)
+    workbook.close()
 
 
-def write_to_excel(directory, export_data, sheetname):
-    """Exports given data to given directory with given sheetname."""
-    dataframe = pd.DataFrame(data=export_data)
-    writer = pd.ExcelWriter(directory, engine="xlsxwriter")
-    dataframe.to_excel(
-        writer, sheet_name=sheetname, startrow=1, header=False, index=False
-    )
-    worksheet = writer.sheets[sheetname]
-    max_row, max_col = dataframe.shape
-    column_settings = []
-    for header in dataframe.columns:
-        column_settings.append({"header": header})
-    worksheet.add_table(0, 0, max_row, max_col - 1, {"columns": column_settings})
-    worksheet.set_column(0, max_col - 1, 12)
-    writer.close()
+# the goal here should be to load book data into a book object,
+# then for each instance of an instructor for that book,
+# assign the book reference to them with the course + section
 
+# if instructor already exists, just add the other information
+# otherwise, make new instructor
 
 # TODO
 # rewrite this into smaller functions to break it apart a little
+# could easily be much more functionized, making it easier to work with
 def create_email_excel(input_sheet=None, file_name=""):
     """Creates an excel sheet to be formatted for usage with PowerAutomate function."""
     full_config = configparser.ConfigParser()
@@ -276,7 +271,8 @@ def create_email_excel(input_sheet=None, file_name=""):
             #                 course[1]}</a>.<br><ul>'
 
             # TODO
-            # combining class codes ?
+            # combining class codes or just restructuring this whole thing to make it
+            # cleaner and easier to work with in the future
 
             # book_dict = {book_str1: [section1, section2],
             #                book_str2: [section1], etc.}
@@ -299,10 +295,10 @@ def create_email_excel(input_sheet=None, file_name=""):
 
                     book_str += "<ul>"
 
-                    print(book.access)
+                    # print(book.access)
                     for access_data in book.access:
                         link = book.access[access_data]["Link"]
-                        print(book.access[access_data])
+                        # print(book.access[access_data])
 
                         if access_data == "Ebook":
                             user_num = book.access[access_data]["Number"]
@@ -406,12 +402,21 @@ def create_email_excel(input_sheet=None, file_name=""):
 
     write_to_excel(output_path, final_data, "Email List")
     update_excel(input_path, book_idx, process_sheet)
-    print("Email sheet exported. Main sheet updated.")
+    # print("Email sheet exported. Main sheet updated.")
 
 
-# the goal here should be to load book data into a book object,
-# then for each instance of an instructor for that book,
-# assign the book reference to them with the course + section
-
-# if instructor already exists, just add the other information
-# otherwise, make new instructor
+def write_to_excel(directory, export_data, sheetname):
+    """Exports given data to given directory with given sheetname."""
+    dataframe = pd.DataFrame(data=export_data)
+    writer = pd.ExcelWriter(directory, engine="xlsxwriter")
+    dataframe.to_excel(
+        writer, sheet_name=sheetname, startrow=1, header=False, index=False
+    )
+    worksheet = writer.sheets[sheetname]
+    max_row, max_col = dataframe.shape
+    column_settings = []
+    for header in dataframe.columns:
+        column_settings.append({"header": header})
+    worksheet.add_table(0, 0, max_row, max_col - 1, {"columns": column_settings})
+    worksheet.set_column(0, max_col - 1, 12)
+    writer.close()

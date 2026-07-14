@@ -12,82 +12,6 @@ import csv
 import ast
 import threading
 
-"""
-SELECT "Bibliographic Details"."Author" saw_0,
-"Bibliographic Details"."Earliest Possible Publication Year" saw_1,
-"Bibliographic Details"."Title" saw_2,
-"Bibliographic Details"."Publisher" saw_3,
-"Bibliographic Details"."MMS Id" saw_4,
-"Bibliographic Details"."ISBN" saw_5,
-"Bibliographic Details"."Edition" saw_6,
-"Bibliographic Details"."Material Type" saw_7,
-"Bibliographic Details"."Resource Type" saw_8,
-"Edition Simplified"."Edition Simplified (Num)" saw_9,
-FROM "Digital Inventory"
-WHERE
-"Bibliographic Details"."ISBN" LIKE '%9781478651123%'
-"""
-
-"""
-SELECT "Bibliographic Details"."Author" saw_0,
-"Bibliographic Details"."Earliest Possible Publication Year" saw_1,
-"Bibliographic Details"."Title" saw_2,
-"Bibliographic Details"."Publisher" saw_3,
-"Bibliographic Details"."MMS Id" saw_4,
-"Bibliographic Details"."ISBN" saw_5,
-"Bibliographic Details"."Edition" saw_6,
-"Bibliographic Details"."Material Type" saw_7,
-"Bibliographic Details"."Resource Type" saw_8,
-"Representation Access Rights"."Access Right Name" saw_9,
-"Representation Access Rights"."Access Right Desc" saw_10,
-"Edition Simplified"."Edition Simplified (Num)" saw_11,
-FROM "Digital Inventory" WHERE "Bibliographic Details"."ISBN" LIKE '%'
-"""
-
-"""
-SELECT "Bibliographic Details"."Author" saw_0,
-"Bibliographic Details"."Earliest Possible Publication Year" saw_1,
-"Bibliographic Details"."Title" saw_2,
-"Bibliographic Details"."Publisher" saw_3,
-"Bibliographic Details"."MMS Id" saw_4,
-"Bibliographic Details"."ISBN" saw_5,
-"Bibliographic Details"."Edition" saw_6,
-"Bibliographic Details"."Material Type" saw_7,
-"Bibliographic Details"."Resource Type" saw_8,
-"Representation Access Rights"."Access Right Name" saw_9,
-"Representation Access Rights"."Access Right Desc" saw_10,
-"Edition Simplified"."Edition Simplified (Num)" saw_11,
-FROM "Digital Inventory" WHERE UPPER("Bibliographic Details"."TITLE") LIKE UPPER('%')
-"""
-
-"""
-SELECT 
-   "Bibliographic Details"."Title" saw_0,
-   "Vendor Interface"."Vendor Name" saw_1,
-   "Vendor Interface"."Interface Name" saw_2,
-   "-- Bibliographic Details"."MMS Id" saw_3,
-   "Vendor Interface"."Available" saw_4
- FROM "E-Inventory"
- WHERE 
-UPPER("Bibliographic Details"."TITLE") LIKE UPPER('%CLIMATE CASINO%')
-"""
-
-# TODO
-# fixing missing isbn or mismatched values rom the bookstore
-# if nothing returns, looking up by the book title instead, comparing
-# author, publisher and edition number
-# use new isbn and information to backpush updating the book information
-
-# can search by isbn but needs to be without restrictive filters
-# then needs to add on the license filters, log where necessary
-# if nothing is found at ISBN, then needs to pivot to searching for book
-# still store data at old ISBN when exporting to CSV, but inlude alternative
-# ISBN information..? and then reinclude additional ISBN if not in original sheet?
-
-# new solution : E-Inventory ?
-# this should correct any problems and now it should be feasible to take out the representation
-# access right sql queries, which will make it easier to access the correct information
-
 
 def get_columns(key="ebook"):
     """Gets the columns being used to construct the SQL query."""
@@ -113,7 +37,7 @@ def get_columns(key="ebook"):
         ]
         overall_section = "Digital Inventory"
 
-    if key == "access":
+    elif key == "access":
         sql_columns = [
             {
                 "Key": "Bibliographic Details",
@@ -209,12 +133,7 @@ def get_table(driver):
 
 
 # TODO
-# this needs SEVERE checking
-# first thought is the search link could possibly be incorrect?
-# maybe searching via MMS ID is improper?
-# patterns kristin told me:
-# NONE of the Ebooks were caught, ONLY CDLs, but not ALL CDLs
-# Print books were ONLY from our MAIN collection
+# may need further testing
 def pull_one_search(driver, mms_list):
     """Opens a OneSearch tab to double check that the MMS ID exists within Primo.
     Takes a list and returns a list, though only used with single IDs right now."""
@@ -255,7 +174,8 @@ def pull_one_search(driver, mms_list):
 
 
 def pull_data(driver, bib_section, bib_value, sql_key):
-    """"""
+    """Given a section, value, and specific SQL template, grabs the
+    relevant data that is desired."""
     section, sql_cols = get_columns(key=f"{sql_key}")
     sql = setup_sql(section, sql_cols, f"{bib_section}")
     sql = sql.replace("%", f"%{bib_value}%")
@@ -294,60 +214,6 @@ def pull_data(driver, bib_section, bib_value, sql_key):
             except Exception as err:
                 print(err)
         return_list.append(store_dict.copy())
-
-    return return_list
-
-
-def pull_ebook_access(driver, mms_id):
-    """"""
-    section, sql_cols = get_columns(key="access")
-    sql = setup_sql(section, sql_cols, "MMS Id")
-    sql = sql.replace("%", f"%{mms_id}%")
-
-
-def pull_analytics(driver, isbn_list, state):
-    """Pulls the analytics information for the given ISBN list from the table."""
-    return_list = []
-    sql_section, sql_columns = get_columns(state)
-    sql_statement = setup_sql(sql_section, sql_columns)
-
-    for isbn in isbn_list:
-
-        sql_text = sql_statement.replace("%", f"%{isbn}%")
-        input_sql(driver, sql_text)
-        tr_list = get_table(driver)
-
-        if tr_list == []:
-            return return_list
-
-        cutoff = 3 + get_col_len(sql_columns)
-        tr_list = tr_list[cutoff:]
-
-        # storing entries for empty portions
-        store_dict = {}
-        # storing order for indexing
-        store_list = []
-        for dict in sql_columns:
-            for col in dict["Cols"]:
-                store_dict[col] = ""
-                store_list.append(col)
-
-        for tr in tr_list:
-            td_list = tr.find_all("td")
-            for td in td_list:
-                try:
-                    td_id = td["id"]
-                    td_text = td.get_text()
-                    id_list = td_id.split("_")
-                    cat_id = get_int(id_list[5])
-                    column = store_list[cat_id]
-                    store_dict[column] = td_text
-                except Exception as err:
-                    print(err)
-
-            return_list.append(store_dict.copy())
-
-        # print(f"{isbn_list} --> {return_list}")
 
     return return_list
 
@@ -399,20 +265,6 @@ def click_element(driver, tag, selector, detail):
             return
         except Exception as err:
             print(err)
-
-
-def setup_sql(sql_section, sql_list, bib_section="ISBN"):
-    """Helper function to turn the SQL categories and lists into a full single query."""
-    sql = "SELECT"
-    idx = 0
-    for dict in sql_list:
-        section = dict["Key"]
-        for col in dict["Cols"]:
-            sql += f' "{section}"."{col}" saw_{idx},'
-            idx += 1
-    sql += f' FROM "{sql_section}" WHERE "Bibliographic Details"."{bib_section}"'
-    sql += """ LIKE '%' """
-    return sql
 
 
 def process_new_isbn(driver, title, state):
@@ -474,13 +326,6 @@ def process_new_isbn(driver, title, state):
         return None
 
 
-# TODO
-# TEST WITH 'CLIMATE CASINO' AS THE TITLE
-# CANNOT DO DIGITAL INVENTORY WITH THE LICENSE TYPES DUE TO PHYSICAL
-# need to work around the digital license problem first !
-# rework this to reprocess the digitial poritions first
-# and then ensure it is checking for Book - Electronic first
-# or something similar
 def process_analytics(analytics_driver, isbn):
     """Fully processes a given ISBN number and pulling all the data from Alma + processing it."""
     year = None
@@ -508,8 +353,6 @@ def process_analytics(analytics_driver, isbn):
             if mms_id.strip() == "":
                 continue
 
-            # TODO
-            # double check implementation of this one search checker
             check_list = pull_one_search(analytics_driver, [mms_id])
             if check_list[0] is False:
                 print(
@@ -578,8 +421,6 @@ def process_analytics(analytics_driver, isbn):
             if mms_id.strip() == "":
                 continue
 
-            # TODO
-            # double check implementation of this one search checker
             check_list = pull_one_search(analytics_driver, [mms_id])
             if check_list[0] is False:
                 print(f"Missing from Primo (EBOOK); skipping. {mms_id}")
@@ -633,6 +474,11 @@ def process_analytics(analytics_driver, isbn):
                                 for section in process_list:
                                     if "user".upper() in section:
                                         users = get_int(section.split(" ")[0])
+            
+            # adding a failstate to ensure these values are marked as unknown
+            # and can be easily removed via find & replace
+            if users == -1:
+                users = "?"
 
             if mms_id not in data:
                 data[mms_id] = {
@@ -730,6 +576,20 @@ def setup_analytics(gui=False):
     driver.get(q_url)
 
     return driver
+
+
+def setup_sql(sql_section, sql_list, bib_section="ISBN"):
+    """Helper function to turn the SQL categories and lists into a full single query."""
+    sql = "SELECT"
+    idx = 0
+    for dict in sql_list:
+        section = dict["Key"]
+        for col in dict["Cols"]:
+            sql += f' "{section}"."{col}" saw_{idx},'
+            idx += 1
+    sql += f' FROM "{sql_section}" WHERE "Bibliographic Details"."{bib_section}"'
+    sql += """ LIKE '%' """
+    return sql
 
 
 def export_analytics(path, info):

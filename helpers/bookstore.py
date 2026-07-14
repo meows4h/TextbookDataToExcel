@@ -11,12 +11,21 @@ from helpers.utilities import get_state, get_directory
 from helpers.helpergui import AddedGUI
 
 
-def str_clean(str):
+def str_clean(value):
     """Removes special characters and whitespace from a string."""
-    new_str = str.replace("&nbsp;", "")
-    new_str = new_str.replace("  ", "")
-    new_str = new_str.replace("\t", "")
-    new_str = new_str.replace("\n", "")
+    original = value
+    new_str = ""
+    first = True
+    while new_str is not original:
+        if first:
+            first = False
+        else:
+            original = new_str
+        new_str = original.strip()
+        new_str = new_str.replace("&nbsp;", "")
+        new_str = new_str.replace("  ", " ")
+        new_str = new_str.replace("\t", "")
+        new_str = new_str.replace("\n", "")
     return new_str
 
 
@@ -116,6 +125,8 @@ def get_prices(driver, table):
                 main_div = material_dict[isbn]
                 main_div.click()
                 # TODO
+                # this has been partially implemented but it cannot handle the number of
+                # requests this script would like to make, check other TODO or documentation
                 # this needs to pull the used and new price points from the beaverstore page
                 # https://osubeaverstore.verbacompare.com/comparison?id=2026-Summer__AEC__411__400
                 html = main_div.get_attribute("innerHTML")
@@ -294,7 +305,7 @@ def pull_textbook_data(gui=False):
                         if row_skip == 0:
                             # if at some point it would be desirable to add in book pricing
                             # this function doesn't work as is, but i stopped progress on it
-                            # seeing has the compare site has rate limiting, which is fair
+                            # seeing as the compare site has rate limiting, which is fair
                             # otherwise, it would be best to simply link to the compare site
                             # in the sheet if anything i think
                             # row_text.append(STORE LINK HERE)

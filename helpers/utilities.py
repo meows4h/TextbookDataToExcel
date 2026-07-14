@@ -12,6 +12,7 @@ def get_int(value):
     if type(value) is str and not pd.isna(value):
         if not value.strip() == "":
             if not any(char.isalpha() for char in value):
+                value = value.replace(" ", "")
                 output = int(value)
     elif type(value) is float and not pd.isna(value):
         output = int(value)
@@ -53,7 +54,32 @@ def get_clean(cleaner, name):
                 temp_list[kdx + 1] = name[kdx + 1].lower()
                 name = "".join(temp_list)
 
-    return f"{name}"
+    temp = name
+    new_name = ""
+    first = True
+    while new_name is not temp:
+        if first:
+            first = False
+        else:
+            temp = new_name
+        new_name = temp.strip()
+        new_name = new_name.replace("&nbsp;", "")
+        new_name = new_name.replace("  ", " ")
+        new_name = new_name.replace("\t", "")
+        new_name = new_name.replace("\n", "")
+
+    prior = ""
+    for jdx, letter in enumerate(new_name):
+        if jdx == 0:
+            prior = letter
+            continue
+        if prior == " ":
+            new_name = list(new_name)
+            new_name[jdx] = new_name[jdx].upper()
+            new_name = "".join(new_name)
+        prior = letter
+
+    return f"{new_name}"
 
 
 def get_state(config):
@@ -113,11 +139,34 @@ def get_edition_string(num):
 
     if edition_num is not None:
         if edition_num[-1] == "1":
-            edition_num += "st"
+            # special case for 11, 12, 13
+            if len(edition_num) > 1:
+                if edition_num[-2] == "1":
+                    edition_num += "th"
+                else:
+                   edition_num += "st" 
+
+            else:
+                edition_num += "st"
+
         elif edition_num[-1] == "2":
-            edition_num += "nd"
+            if len(edition_num) > 1:
+                if edition_num[-2] == "1":
+                    edition_num += "th"
+                else:
+                    edition_num += "nd"
+            else:
+                edition_num += "nd"
+
         elif edition_num[-1] == "3":
-            edition_num += "rd"
+            if len(edition_num) > 1:
+                if edition_num[-2] == "1":
+                    edition_num += "th"
+                else:
+                    edition_num += "rd"
+            else:
+                edition_num += "rd"
+
         elif edition_num[-1] in th_list:
             edition_num += "th"
 
@@ -222,7 +271,7 @@ def get_sheet_headers():
 
 
 def get_config_headers():
-    """"""
+    """Gets the config file reading for the headers.ini file."""
     config = configparser.ConfigParser()
     config.read("helpers/ini/headers.ini")
     return config
