@@ -588,6 +588,7 @@ class ClassesTest(unittest.TestCase):
         head_names, main_headers = util.get_sheet_headers()
         for header in main_headers:
             dataframe[f"{header}"] = []
+            dataframe[f"{header}"] = dataframe[f"{header}"].astype(object)
         format_headers = util.get_format_headers()
 
         max_courses = classes.process_courses(self.book_list, format_headers, dataframe)
