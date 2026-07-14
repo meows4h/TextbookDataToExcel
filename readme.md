@@ -54,7 +54,7 @@ This option provides three further options to the user.
 2. Update Analytics
 3. Update Enrollment
 
-Sometimes a workable Excel sheet needs to be made before all the data is present. In this case, it can be tough to update information after the fact, to help with this, similar to how it reads the input sheet for creating emails, it will read the sheet and combine it with any case of missing information from `emails.csv`, `analytics.csv`, and (To Be Added) `enrollment.csv`.
+Sometimes a workable Excel sheet needs to be made before all the data is present. In this case, it can be tough to update information after the fact, to help with this, similar to how it reads the input sheet for creating emails, it will read the sheet and combine it with any case of missing information from `emails.csv`, `analytics.csv`, and `enrollment.csv`.
 
 ## Email Text
 If the text contained within the emails that get sent out to professors needs to be updated, this is where those pieces can be updated at. It can also be modified directly with the `emails.ini` file within `helpers/ini`.
