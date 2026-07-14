@@ -144,7 +144,7 @@ def get_edition_string(num):
                 if edition_num[-2] == "1":
                     edition_num += "th"
                 else:
-                   edition_num += "st" 
+                    edition_num += "st"
 
             else:
                 edition_num += "st"

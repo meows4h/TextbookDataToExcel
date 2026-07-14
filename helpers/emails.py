@@ -71,6 +71,7 @@ def update_excel(directory, data, sheet_name):
 # if instructor already exists, just add the other information
 # otherwise, make new instructor
 
+
 # TODO
 # rewrite this into smaller functions to break it apart a little
 # could easily be much more functionized, making it easier to work with

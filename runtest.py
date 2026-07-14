@@ -5,5 +5,5 @@ import unittest
 # the helpers folder to allow all other files to properly reference
 # their dependencies
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

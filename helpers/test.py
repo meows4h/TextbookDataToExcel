@@ -24,8 +24,10 @@ from warnings import simplefilter
 # this could be done in headless mode w/ more looking over the HTML of the log in
 # pages, but focusing on the core logic functions for now
 
+
 class AnalyticsTest(unittest.TestCase):
     """Testing the analytics.py file."""
+
     def setUp(self):
         # error message setup
         self.null_msg = "get_columns: Null % SQL Section."
@@ -43,7 +45,7 @@ class AnalyticsTest(unittest.TestCase):
                 check = False
                 break
         return check
-    
+
     # functionizing the error messages
     def get_sql_msg(self, value):
         new_null = self.null_msg.replace("%", value)
@@ -56,7 +58,7 @@ class AnalyticsTest(unittest.TestCase):
     def test_ebook_sql(self):
         section, columns = alma.get_columns(key="ebook")
         messages = self.get_sql_msg("Ebook")
-        
+
         self.assertIsNotNone(section, messages["Null"])
         self.assertTrue(section, messages["Empty"])
 
@@ -66,7 +68,7 @@ class AnalyticsTest(unittest.TestCase):
     def test_access_sql(self):
         section, columns = alma.get_columns(key="access")
         messages = self.get_sql_msg("Access")
-        
+
         self.assertIsNotNone(section, messages["Null"])
         self.assertTrue(section, messages["Empty"])
 
@@ -76,17 +78,17 @@ class AnalyticsTest(unittest.TestCase):
     def test_physical_sql(self):
         section, columns = alma.get_columns(key="physical")
         messages = self.get_sql_msg("Physical")
-        
+
         self.assertIsNotNone(section, messages["Null"])
         self.assertTrue(section, messages["Empty"])
 
         col_check = self.check_columns(columns)
         self.assertTrue(col_check, messages["Miss"])
-    
+
     def test_einventory_sql(self):
         section, columns = alma.get_columns(key="e-inventory")
         messages = self.get_sql_msg("E-Inventory")
-        
+
         self.assertIsNotNone(section, messages["Null"])
         self.assertTrue(section, messages["Empty"])
 
@@ -96,7 +98,7 @@ class AnalyticsTest(unittest.TestCase):
     def test_public_sql(self):
         section, columns = alma.get_columns(key="public")
         messages = self.get_sql_msg("Public")
-        
+
         self.assertIsNotNone(section, messages["Null"])
         self.assertTrue(section, messages["Empty"])
 
@@ -137,7 +139,11 @@ class AnalyticsTest(unittest.TestCase):
         ]
         num = alma.get_col_len(columns)
         expected = 14
-        self.assertEqual(num, expected, f"get_col_len: Miscounting column count; expected {expected}, got {num}")
+        self.assertEqual(
+            num,
+            expected,
+            f"get_col_len: Miscounting column count; expected {expected}, got {num}",
+        )
 
     # selenium functions would go here
 
@@ -148,13 +154,17 @@ class AnalyticsTest(unittest.TestCase):
             section, columns = alma.get_columns(key=key_val)
             sql = alma.setup_sql(section, columns)
             for command in self.sql_statements:
-                self.assertTrue(command in sql, f"setup_sql: {key_val} SQL statement missing {command}")
+                self.assertTrue(
+                    command in sql,
+                    f"setup_sql: {key_val} SQL statement missing {command}",
+                )
 
     # export and import functions would go here
 
 
 class BookstoreTest(unittest.TestCase):
     """Testing the bookstore.py file."""
+
     def setUp(self):
         self.clean_msg = "str_clean: Value mismatch from expected; % =/= ^"
 
@@ -221,35 +231,57 @@ class BookstoreTest(unittest.TestCase):
         comments = "Some Comment"
         requisition = "2/2/2022 2:22:22 PM"
 
-        example_row = [term, subject, code, section, instructor, title, edition, author, isbn, publisher, req, sku, comments, requisition]
+        example_row = [
+            term,
+            subject,
+            code,
+            section,
+            instructor,
+            title,
+            edition,
+            author,
+            isbn,
+            publisher,
+            req,
+            sku,
+            comments,
+            requisition,
+        ]
         row = table[0]
-        
+
         for idx, cell in enumerate(row):
-            self.assertEqual(cell, example_row[idx], f"pull_info: {cell} doesn't equal {example_row[idx]}")
+            self.assertEqual(
+                cell,
+                example_row[idx],
+                f"pull_info: {cell} doesn't equal {example_row[idx]}",
+            )
 
 
 class ClassesTest(unittest.TestCase):
     """Testing the classes.py file."""
+
     def setUp(self):
         # individiual preset testing
-        self.analytics_data = {"Physical MMS Id": {
-            "Types": ["Physical"],
-            "Copies": [2],
-            "Users": [0],
-            "CDL": [False],
-            "Link": "https://www.example.com",
-            "Year": 2024,
-            "Location": "Valley Library BIB"
-        },
-        "Ebook MMS Id": {
-            "Types": ["Electronic"],
-            "Copies": [0],
-            "Users": [4],
-            "CDL": [True],
-            "Link": "https://www.example2.com",
-            "Platform": "",
-            "Year": 2020
-        }}
+        self.analytics_data = {
+            "Physical MMS Id": {
+                "Types": ["Physical"],
+                "Copies": [2],
+                "Users": [0],
+                "CDL": [False],
+                "Link": "https://www.example.com",
+                "Year": 2024,
+                "Location": "Valley Library BIB",
+            },
+            "Ebook MMS Id": {
+                "Types": ["Electronic"],
+                "Copies": [0],
+                "Users": [4],
+                "CDL": [True],
+                "Link": "https://www.example2.com",
+                "Platform": "",
+                "Year": 2020,
+            },
+        }
         self.book_info = {
             "Title": "Book Title",
             "Author": "Book Author",
@@ -282,7 +314,10 @@ class ClassesTest(unittest.TestCase):
         for num in range(1, book_count + 1):
             base_course = f"Course 0"
             base_section = section_templates[get_random(0, len(section_templates) - 1)]
-            base_enroll = [get_random(0, 150), campus_templates[get_random(0, len(campus_templates ) - 1)]]
+            base_enroll = [
+                get_random(0, 150),
+                campus_templates[get_random(0, len(campus_templates) - 1)],
+            ]
             edition = get_random(0, 20)
             # sometimes the edition value is left empty
             if edition == 0:
@@ -308,9 +343,9 @@ class ClassesTest(unittest.TestCase):
                     "CDL": [False],
                     "Link": "https://www.example3.com",
                     "Year": 2000 + get_random(0, 25),
-                    "Location": "Valley Library BIB"
+                    "Location": "Valley Library BIB",
                 }
-            
+
             rand = get_random(1, 3)
             if rand >= 2:
                 rand = get_random(1, 2)
@@ -318,7 +353,9 @@ class ClassesTest(unittest.TestCase):
                     is_cdl = True
                 else:
                     is_cdl = False
-                base_platform = platform_templates[get_random(0, len(platform_templates) - 1)]
+                base_platform = platform_templates[
+                    get_random(0, len(platform_templates) - 1)
+                ]
                 base_analytics[f"{num}Electronic"] = {
                     "Types": ["Electronic"],
                     "Copies": [0],
@@ -326,7 +363,7 @@ class ClassesTest(unittest.TestCase):
                     "CDL": [is_cdl],
                     "Link": "https://www.example4.com",
                     "Platform": base_platform,
-                    "Year": 2000 + get_random(0, 25)
+                    "Year": 2000 + get_random(0, 25),
                 }
 
             base_info = {
@@ -353,10 +390,17 @@ class ClassesTest(unittest.TestCase):
             # generating sections for the already existing base section
             section_count = get_random(1, 30)
             for sec in range(1, section_count + 1):
-                course_section = section_templates[get_random(0, len(section_templates) - 1)]
+                course_section = section_templates[
+                    get_random(0, len(section_templates) - 1)
+                ]
                 sec_num = course_section + sec
-                sec_enroll = [get_random(0, 150), campus_templates[get_random(0, len(campus_templates) - 1)]]
-                new_book.add_section(base_course, sec_num, instructor, email, sec_enroll)
+                sec_enroll = [
+                    get_random(0, 150),
+                    campus_templates[get_random(0, len(campus_templates) - 1)],
+                ]
+                new_book.add_section(
+                    base_course, sec_num, instructor, email, sec_enroll
+                )
 
             book_sections.append(section_count + 1)
 
@@ -364,21 +408,33 @@ class ClassesTest(unittest.TestCase):
             course_count = get_random(1, 6)
             for course in range(1, course_count + 1):
                 course_name = f"Course {course}"
-                course_section = section_templates[get_random(0, len(section_templates) - 1)]
-                course_enroll = [get_random(0, 150), campus_templates[get_random(0, len(campus_templates) - 1)]]
-                new_book.add_course(course_name, course_section, instructor, email, course_enroll)
+                course_section = section_templates[
+                    get_random(0, len(section_templates) - 1)
+                ]
+                course_enroll = [
+                    get_random(0, 150),
+                    campus_templates[get_random(0, len(campus_templates) - 1)],
+                ]
+                new_book.add_course(
+                    course_name, course_section, instructor, email, course_enroll
+                )
 
                 section_count = get_random(1, 30)
                 for sec in range(1, section_count + 1):
                     sec_num = course_section + sec
-                    sec_enroll = [get_random(0, 150), campus_templates[get_random(0, len(campus_templates ) - 1)]]
-                    new_book.add_section(course_name, sec_num, instructor, email, sec_enroll)
+                    sec_enroll = [
+                        get_random(0, 150),
+                        campus_templates[get_random(0, len(campus_templates) - 1)],
+                    ]
+                    new_book.add_section(
+                        course_name, sec_num, instructor, email, sec_enroll
+                    )
 
                 book_sections.append(section_count + 1)
-            
+
             book_sections = sorted(book_sections, reverse=True)
             self.section_list.append(book_sections)
-            
+
             # need to add one for the initial set
             self.course_list.append(course_count + 1)
             self.book_list.append(new_book)
@@ -394,10 +450,20 @@ class ClassesTest(unittest.TestCase):
         enroll_data = [99, "D"]
 
         self.book.add_course(course_name, section_num, instructor, email, enroll_data)
-        self.assertEqual(len(self.book.courses), 2, "add_course: Number of courses is incorrect.")
-        self.assertEqual(len(self.book.sections), 2, "add_course: Number of sections is incorrect.")
-        self.assertEqual(self.book.sec_size[-1], 1, "add_course: Incorrect sec_size array number.")
-        self.assertEqual(self.book.total_enroll, 100, "add_course: Total enrollment count is incorrect.")
+        self.assertEqual(
+            len(self.book.courses), 2, "add_course: Number of courses is incorrect."
+        )
+        self.assertEqual(
+            len(self.book.sections), 2, "add_course: Number of sections is incorrect."
+        )
+        self.assertEqual(
+            self.book.sec_size[-1], 1, "add_course: Incorrect sec_size array number."
+        )
+        self.assertEqual(
+            self.book.total_enroll,
+            100,
+            "add_course: Total enrollment count is incorrect.",
+        )
 
     # add_section method
     def test_add_section(self):
@@ -408,31 +474,57 @@ class ClassesTest(unittest.TestCase):
         enroll_data = [99, "D"]
 
         self.book.add_section(course_name, section_num, instructor, email, enroll_data)
-        self.assertEqual(len(self.book.courses), 1, "add_section: Number of courses is incorrect.")
+        self.assertEqual(
+            len(self.book.courses), 1, "add_section: Number of courses is incorrect."
+        )
         # adding the 0 index as book.sections is a list of lists of sections, with the index
         # corresponding to the index of the course index
-        self.assertEqual(len(self.book.sections[0]), 2, "add_section: Number of sections is incorrect.")
-        self.assertEqual(self.book.sec_size[-1], 2, "add_section: Incorrect sec_size array number.")
-        self.assertEqual(self.book.total_enroll, 100, "add_section: Total enrollment count is incorrect.")
+        self.assertEqual(
+            len(self.book.sections[0]),
+            2,
+            "add_section: Number of sections is incorrect.",
+        )
+        self.assertEqual(
+            self.book.sec_size[-1], 2, "add_section: Incorrect sec_size array number."
+        )
+        self.assertEqual(
+            self.book.total_enroll,
+            100,
+            "add_section: Total enrollment count is incorrect.",
+        )
 
     # add_isbn method
     def test_add_isbn(self):
         isbn = 2
         self.book.add_isbn(isbn)
-        self.assertEqual(len(self.book.isbns), 2, "add_isbn: Number of ISBNs is incorrect.")
+        self.assertEqual(
+            len(self.book.isbns), 2, "add_isbn: Number of ISBNs is incorrect."
+        )
         self.assertIn(2, self.book.isbns, "add_isbn: Missing ISBN number.")
 
     # add_enroll method
     def test_add_enroll(self):
         enroll_data = [99, "D"]
         self.book.add_enroll(enroll_data[1], enroll_data[0])
-        self.assertEqual(self.book.total_enroll, 100, "add_enroll: Total enrollment count is incorrect.")
-        self.assertIn("Ecampus", self.book.campuses, "add_enroll: Missing one of the correct campuses.")
+        self.assertEqual(
+            self.book.total_enroll,
+            100,
+            "add_enroll: Total enrollment count is incorrect.",
+        )
+        self.assertIn(
+            "Ecampus",
+            self.book.campuses,
+            "add_enroll: Missing one of the correct campuses.",
+        )
 
     # add_required method
     def test_add_required(self):
         self.book.add_required()
-        self.assertEqual("Required", self.book.requirement, "add_required: Value did not update properly.")
+        self.assertEqual(
+            "Required",
+            self.book.requirement,
+            "add_required: Value did not update properly.",
+        )
 
     # End Book Class testing
 
@@ -445,16 +537,24 @@ class ClassesTest(unittest.TestCase):
             base_enroll = [99, "D"]
             instructor = "Test Name"
             email = "Test Email"
-            self.book.add_course(course_name, base_section, instructor, email, base_enroll)
+            self.book.add_course(
+                course_name, base_section, instructor, email, base_enroll
+            )
             for sec in range(1, num):
                 sec_num = base_section + sec
                 sec_enroll = [sec + num, "C"]
-                self.book.add_section(course_name, sec_num, instructor, email, sec_enroll)
+                self.book.add_section(
+                    course_name, sec_num, instructor, email, sec_enroll
+                )
 
         max_list = classes.get_max_index(self.book.sec_size)
         # it finds the first index first, meaning the matching sizes are done by lowest index
         expected = [4, 3, 2, 0, 1]
-        self.assertEqual(expected, max_list, "get_max_index: Course maximum section count order does not match expected values.")
+        self.assertEqual(
+            expected,
+            max_list,
+            "get_max_index: Course maximum section count order does not match expected values.",
+        )
 
     # get_max_courses testing
     def test_max_courses(self):
@@ -595,42 +695,37 @@ class ClassesTest(unittest.TestCase):
         max_courses = classes.process_courses(self.book_list, format_headers, dataframe)
         classes.process_sections(self.book_list, format_headers, max_courses, dataframe)
         classes.process_isbns(self.book_list, head_names, main_headers, dataframe)
-        dataframe = classes.import_data(self.book_list, format_headers, head_names, dataframe)
+        dataframe = classes.import_data(
+            self.book_list, format_headers, head_names, dataframe
+        )
         self.assertEqual(len(self.book_list), len(dataframe))
 
 
 class EmailsTest(unittest.TestCase):
     """Testing the emails.py file."""
+
     def setUp(self):
         book_title = "Book Title"
         book_author = "Book Author"
         book_edition = "Book Edition"
         book_year = "Book Year"
         book_access = {
-            "Ebook": {
-                "Number": 1,
-                "Link": "ebook cdl link",
-                "CDL": True
-            },
-            "Print1": {
-                "Number": 2,
-                "Link": "print 1 link"
-            },
-            "Print2": {
-                "Number": 4,
-                "Link": "print 2 link"
-            },
-            "Audio": {
-                "Link": "audio link"
-            }
+            "Ebook": {"Number": 1, "Link": "ebook cdl link", "CDL": True},
+            "Print1": {"Number": 2, "Link": "print 1 link"},
+            "Print2": {"Number": 4, "Link": "print 2 link"},
+            "Audio": {"Link": "audio link"},
         }
-        self.emails_book = emails.Book(book_title, book_author, book_edition, book_year, book_access)
+        self.emails_book = emails.Book(
+            book_title, book_author, book_edition, book_year, book_access
+        )
 
         inst_name = "Instructor Name"
         inst_email = "Instructor Email"
         inst_course = "Course 1"
         inst_section = "101"
-        self.emails_instructor = emails.Instructor(inst_name, inst_email, inst_course, inst_section, self.emails_book)
+        self.emails_instructor = emails.Instructor(
+            inst_name, inst_email, inst_course, inst_section, self.emails_book
+        )
 
     # Instructor Class testing
 
@@ -640,18 +735,14 @@ class EmailsTest(unittest.TestCase):
         author = "Author 2"
         edition = "Edition 2"
         year = "Year 2"
-        access = {"Ebook": {
-                "Number": 7,
-                "Link": "ebook link",
-                "CDL": False
-                }}
+        access = {"Ebook": {"Number": 7, "Link": "ebook link", "CDL": False}}
         local_book = emails.Book(title, author, edition, year, access)
 
         case_courses = ["Course 1", "Course 1", "Course 2"]
         case_sections = ["101", "102", "101"]
         for idx, course in enumerate(case_courses):
             self.emails_instructor.add_book(course, case_sections[idx], local_book)
-                    
+
         self.assertEqual(2, len(self.emails_instructor.data))
         self.assertEqual(2, len(self.emails_instructor.data["Course 1"]))
         self.assertEqual(2, len(self.emails_instructor.data["Course 1"]["101"]))
@@ -661,7 +752,6 @@ class EmailsTest(unittest.TestCase):
 
         # could add in more tests beyond just the length checking but the data issues would
         # be apparent when generating emails as well
-        
 
     # End Instructor Class testing
 
@@ -670,7 +760,7 @@ class EmailsTest(unittest.TestCase):
     def test_update_excel(self):
         bookstore_dir = get_directory(["testing", "test_bookstore.csv"])
         output_dir = get_directory(["testing", "test_output.xlsx"])
-        
+
         workbook = openpyxl.load_workbook(output_dir)
         sheet_name = "Test"
         worksheet = workbook[sheet_name]
@@ -731,11 +821,10 @@ class EmailsTest(unittest.TestCase):
                 self.assertFalse(reading_val)
                 self.assertFalse(email_val)
 
-
     # create_email_excel testing
     def test_create_emails(self):
         output_dir = get_directory(["testing", "test_output.xlsx"])
-        
+
         workbook = openpyxl.load_workbook(output_dir)
         sheet_name = "Test"
         worksheet = workbook[sheet_name]
@@ -772,7 +861,7 @@ class EmailsTest(unittest.TestCase):
         workbook.save(output_dir)
         workbook.close()
         emails.create_email_excel("Test", output_dir)
-        
+
         final_email_list = sorted(email_ready_list + email_sent_list)
         email_dir = get_directory(["..", "email_output.xlsx"])
 
@@ -793,6 +882,7 @@ class EmailsTest(unittest.TestCase):
 
 class EnrollTest(unittest.TestCase):
     """Testing the enrollment.py file."""
+
     def setUp(self):
         directory = ["testing", "test_enrollment.csv"]
         self.enroll_dir = get_directory(directory)
@@ -816,7 +906,9 @@ class EnrollTest(unittest.TestCase):
         self.assertTrue(check, "")
 
     def test_get_enrollment_with(self):
-        instr_dict, enroll_dict = enroll.get_enrollment_data(self.enroll_dir, self.instructor_dict)
+        instr_dict, enroll_dict = enroll.get_enrollment_data(
+            self.enroll_dir, self.instructor_dict
+        )
         self.assertIn("MTH101", enroll_dict, "")
         self.assertIn("1", enroll_dict["MTH101"], "")
 
@@ -829,38 +921,43 @@ class EnrollTest(unittest.TestCase):
             email = self.instructor_dict[name]
             check = self.check_instructor_dict(self.instructor_dict, name, email)
             self.assertTrue(check, "")
-        
+
 
 class OutlookTest(unittest.TestCase):
     """Testing the grabber.py file."""
+
     # every function aside from the importer and exporter deal with selenium webdrivers
 
 
 class GUITest(unittest.TestCase):
     """Testing the gui.py file."""
+
     # automated gui testing falls under a similar circumstance to testing selenium
     # there are ways and methods to do so, but for now, not enough time
 
 
 class HelperGUITest(unittest.TestCase):
     """Testing the helpergui.py file."""
+
     # see above GUI notes, automated testing gui not within scope as of right now
     # additionally, it is easy to manually test and verify results
 
 
 class ModesTest(unittest.TestCase):
     """Testing the modes.py file."""
+
     # functions to primarily test here would be the excel sheet updaters
-    
+
     # enrollment_update testing
 
     # analytics_update testing
-    
+
     # emails_update testing
 
 
 class OutputTest(unittest.TestCase):
     """Testing the output.py file."""
+
     # this file hosts a single function for the pure reason of handling
     # formatting and finishing out the export for an excel file
     # it should be fine to leave out of testing for now
@@ -868,6 +965,7 @@ class OutputTest(unittest.TestCase):
 
 class SheetTest(unittest.TestCase):
     """Testing the sheetmaker.py file."""
+
     # only testing the version of the function with no gui, no cli interaction
 
     # make_excel_sheet testing
@@ -882,7 +980,11 @@ class UtilTest(unittest.TestCase):
         expected = [1245, 93478, None, None, None, 65, 109]
         for idx, value in enumerate(values):
             result = util.get_int(value)
-            self.assertEqual(expected[idx], result, f"get_int: result {result} does not match {expected[idx]}.")
+            self.assertEqual(
+                expected[idx],
+                result,
+                f"get_int: result {result} does not match {expected[idx]}.",
+            )
 
     # get_clean testing
     def test_get_clean(self):
@@ -890,13 +992,13 @@ class UtilTest(unittest.TestCase):
         test_names = [
             "a book that has examples and wOrdS SOMEthing to do with an example e-reading",
             "what other EXAMPLE case isn't here",
-            "'what about words appearing' or something elsewhere"
-            ]
+            "'what about words appearing' or something elsewhere",
+        ]
         expected = [
             "A Book That Has S And To Do With An E-Reading",
             "What Other Case Isn't Here",
-            "'What About Appearing' Or Elsewhere"
-            ]
+            "'What About Appearing' Or Elsewhere",
+        ]
         for idx, name in enumerate(test_names):
             result = util.get_clean(test_cleaner, name)
             self.assertEqual(expected[idx], result)
@@ -916,7 +1018,11 @@ class UtilTest(unittest.TestCase):
         test_config = test_config["test"]
         result = util.get_directory("Test", test_config)
         expected = get_directory(["testing", "test_config.csv"])
-        self.assertEqual(expected, result, f"get_directory: result {result} does not match {expected}.")
+        self.assertEqual(
+            expected,
+            result,
+            f"get_directory: result {result} does not match {expected}.",
+        )
 
     # get_filepath testing
     def test_get_filepath(self):
@@ -940,7 +1046,18 @@ class UtilTest(unittest.TestCase):
     # get_edition_string testing
     def test_get_edition_string(self):
         cases = [None, "", "5", 29, 10, "1", 11, 21, 22, 13]
-        expected = [None, None, "5th", "29th", "10th", "1st", "11th", "21st", "22nd", "13th"]
+        expected = [
+            None,
+            None,
+            "5th",
+            "29th",
+            "10th",
+            "1st",
+            "11th",
+            "21st",
+            "22nd",
+            "13th",
+        ]
         for idx, case in enumerate(cases):
             result = util.get_edition_string(case)
             self.assertEqual(expected[idx], result)
@@ -953,7 +1070,9 @@ class UtilTest(unittest.TestCase):
         format_headers = util.get_format_headers()
         cases = [["TestNum", "TestSection", "TestEmailInfo"]]
         for idx, case in enumerate(cases):
-            result = util.get_replace_header(format_headers[2], case[0], case[1], case[2])
+            result = util.get_replace_header(
+                format_headers[2], case[0], case[1], case[2]
+            )
             for val in case:
                 self.assertIn(val, result)
 
@@ -967,7 +1086,7 @@ class UtilTest(unittest.TestCase):
 
     # skipping get_input and get_enabled as it is an input oriented function
 
-    # get_sheet_headers, get_config_headers, and get_string_cleaners 
+    # get_sheet_headers, get_config_headers, and get_string_cleaners
     # are all also is information grabbing functions
 
     # get_row_info testing
@@ -982,14 +1101,28 @@ class UtilTest(unittest.TestCase):
         # filling the rest with non-existent values, but this usually does
         # not occur in the natural data this script will be managing
         cases = ["C", "D", "Z", "L", "N", "B", "H", "PDX", "DC", "23432", "CR"]
-        expected = ["Corvallis", "Ecampus", "International", "LaGrande", "Newport", "Cascades", "Portland", "Portland", "Ecampus", None, None]
+        expected = [
+            "Corvallis",
+            "Ecampus",
+            "International",
+            "LaGrande",
+            "Newport",
+            "Cascades",
+            "Portland",
+            "Portland",
+            "Ecampus",
+            None,
+            None,
+        ]
         for idx, case in enumerate(cases):
             result = util.get_campus(case)
             self.assertEqual(expected[idx], result)
 
     # skipping set_col_format as it is likely to fluctuate and change
 
+
 # some helper functions to carry out testing various features
+
 
 def get_directory(folder_list):
     curr_dir = os.path.dirname(__file__)
