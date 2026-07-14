@@ -4,6 +4,7 @@ import random
 import pandas as pd
 import openpyxl
 import datetime
+import configparser
 
 import helpers.analytics as alma
 import helpers.bookstore as book
@@ -746,12 +747,14 @@ class EmailsTest(unittest.TestCase):
         email_workbook = openpyxl.load_workbook(email_dir)
         email_worksheet = email_workbook["Email List"]
 
-        # change this implementation to check each row, each cell, check header like normal
-        # split the name cell into the number on its own and then verify the number in the list
-        # for number in email_ready_list:
-        #     for row in email_worksheet.iter_rows(min_row=2):
-        #         self.assertEqual(row["Name"], f"Example Name {number}")
-
+        for row in email_worksheet.iter_rows(min_row=2):
+            for cell in row:
+                col = cell.column_letter
+                if email_worksheet[f"{col}1"] == "Name":
+                    name_col_list = cell.value.split(" ")
+                    number = int(name_col_list[2])
+                    self.assertIn(number, final_email_list)
+                    break
 
     # write_to_excel testing -- this is an export function and should be fine
 
@@ -798,30 +801,182 @@ class EnrollTest(unittest.TestCase):
 
 class OutlookTest(unittest.TestCase):
     """Testing the grabber.py file."""
+    # every function aside from the importer and exporter deal with selenium webdrivers
 
 
 class GUITest(unittest.TestCase):
     """Testing the gui.py file."""
+    # automated gui testing falls under a similar circumstance to testing selenium
+    # there are ways and methods to do so, but for now, not enough time
 
 
 class HelperGUITest(unittest.TestCase):
     """Testing the helpergui.py file."""
+    # see above GUI notes, automated testing gui not within scope as of right now
+    # additionally, it is easy to manually test and verify results
 
 
 class ModesTest(unittest.TestCase):
     """Testing the modes.py file."""
+    # functions to primarily test here would be the excel sheet updaters
+    
+    # enrollment_update testing
+
+    # analytics_update testing
+    
+    # emails_update testing
 
 
 class OutputTest(unittest.TestCase):
     """Testing the output.py file."""
+    # this file hosts a single function for the pure reason of handling
+    # formatting and finishing out the export for an excel file
+    # it should be fine to leave out of testing for now
 
 
 class SheetTest(unittest.TestCase):
     """Testing the sheetmaker.py file."""
+    # only testing the version of the function with no gui, no cli interaction
+
+    # make_excel_sheet testing
 
 
 class UtilTest(unittest.TestCase):
     """Testing the utilities.py file."""
+
+    # get_int testing
+    def test_get_int(self):
+        values = [" 12   4 5  ", "93478", None, "", "     ", 65.435343, 109]
+        expected = [1245, 93478, None, None, None, 65, 109]
+        for idx, value in enumerate(values):
+            result = util.get_int(value)
+            self.assertEqual(expected[idx], result, f"get_int: result {result} does not match {expected[idx]}.")
+
+    # get_clean testing
+    def test_get_clean(self):
+        test_cleaner = ["Example", "WORDS", "something"]
+        test_names = [
+            "a book that has examples and wOrdS SOMEthing to do with an example e-reading",
+            "what other EXAMPLE case isn't here",
+            "'what about words appearing' or something elsewhere"
+            ]
+        expected = [
+            "A Book That Has S And To Do With An E-Reading",
+            "What Other Case Isn't Here",
+            "'What About Appearing' Or Elsewhere"
+            ]
+        for idx, name in enumerate(test_names):
+            result = util.get_clean(test_cleaner, name)
+            self.assertEqual(expected[idx], result)
+
+    # get_state testing
+    def test_get_state(self):
+        cases = ["true", "hmmm", "anything", "false", "FALSE", "False", "True"]
+        expected = [True, True, True, True, True, False, True]
+        for idx, case in enumerate(cases):
+            result = bool(util.get_state(case))
+            self.assertEqual(expected[idx], result)
+
+    # get_directory testing
+    def test_get_directory(self):
+        test_config = configparser.ConfigParser()
+        test_config.read("helpers/testing/test_config.ini")
+        test_config = test_config["test"]
+        result = util.get_directory("Test", test_config)
+        expected = get_directory(["testing", "test_config.csv"])
+        self.assertEqual(expected, result, f"get_directory: result {result} does not match {expected}.")
+
+    # get_filepath testing
+    def test_get_filepath(self):
+        cases = []
+        expected = []
+        for idx, case in enumerate(cases):
+            result = util
+            self.assertEqual(expected[idx], result)
+
+    # get_letter testing
+    def test_get_letter(self):
+        cases = []
+        expected = []
+        for idx, case in enumerate(cases):
+            result = util
+            self.assertEqual(expected[idx], result)
+
+    # get_edition_string testing
+    def test_get_edition_string(self):
+        cases = []
+        expected = []
+        for idx, case in enumerate(cases):
+            result = util
+            self.assertEqual(expected[idx], result)
+
+    # get_format_headers testing
+    def test_get_format_headers(self):
+        cases = []
+        expected = []
+        for idx, case in enumerate(cases):
+            result = util
+            self.assertEqual(expected[idx], result)
+
+    # get_replace_header testing
+    def test_get_replace_header(self):
+        cases = []
+        expected = []
+        for idx, case in enumerate(cases):
+            result = util
+            self.assertEqual(expected[idx], result)
+
+    # get_split_course testing
+    def test_get_split_course(self):
+        cases = []
+        expected = []
+        for idx, case in enumerate(cases):
+            result = util
+            self.assertEqual(expected[idx], result)
+
+    # skipping get_input and get_enabled as it is an input oriented function
+
+    # get_sheet_headers testing
+    def test_get_sheet_headers(self):
+        cases = []
+        expected = []
+        for idx, case in enumerate(cases):
+            result = util
+            self.assertEqual(expected[idx], result)
+
+    # get_config_headers testing
+    def test_get_config_headers(self):
+        cases = []
+        expected = []
+        for idx, case in enumerate(cases):
+            result = util
+            self.assertEqual(expected[idx], result)
+
+    # get_string_cleaners testing
+    def test_get_string_cleaners(self):
+        cases = []
+        expected = []
+        for idx, case in enumerate(cases):
+            result = util
+            self.assertEqual(expected[idx], result)
+
+    # get_row_info testing
+    def test_get_row_info(self):
+        cases = []
+        expected = []
+        for idx, case in enumerate(cases):
+            result = util
+            self.assertEqual(expected[idx], result)
+
+    # get_campus testing
+    def test_get_campus(self):
+        cases = []
+        expected = []
+        for idx, case in enumerate(cases):
+            result = util
+            self.assertEqual(expected[idx], result)
+
+    # skipping set_col_format as it is likely to fluctuate and change
 
 
 def get_directory(folder_list):
