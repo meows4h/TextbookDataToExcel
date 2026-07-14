@@ -474,7 +474,7 @@ def process_analytics(analytics_driver, isbn):
                                 for section in process_list:
                                     if "user".upper() in section:
                                         users = get_int(section.split(" ")[0])
-            
+
             # adding a failstate to ensure these values are marked as unknown
             # and can be easily removed via find & replace
             if users == -1:
