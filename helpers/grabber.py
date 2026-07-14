@@ -280,7 +280,11 @@ def grabber_gui(textbook_table, email_dict):
         while True:
             time.sleep(0.7)
             try:
-                # TODO trying to implement webdriverwait
+                # TODO 
+                # implementing webdriverwait to speed up checking times
+                # and make this whole process a little faster and more precise
+                # otherwise, leaving this alone for now as it seems to cause more
+                # issues that it aids in fixing
                 # suggestion_box = WebDriverWait(driver, 3).until(
                 #     EC.presence_of_element_located((By.CLASS_NAME, "ms-FloatingSuggestionsList-container"))
                 # )

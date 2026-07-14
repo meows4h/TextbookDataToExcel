@@ -139,11 +139,34 @@ def get_edition_string(num):
 
     if edition_num is not None:
         if edition_num[-1] == "1":
-            edition_num += "st"
+            # special case for 11, 12, 13
+            if len(edition_num) > 1:
+                if edition_num[-2] == "1":
+                    edition_num += "th"
+                else:
+                   edition_num += "st" 
+
+            else:
+                edition_num += "st"
+
         elif edition_num[-1] == "2":
-            edition_num += "nd"
+            if len(edition_num) > 1:
+                if edition_num[-2] == "1":
+                    edition_num += "th"
+                else:
+                    edition_num += "nd"
+            else:
+                edition_num += "nd"
+
         elif edition_num[-1] == "3":
-            edition_num += "rd"
+            if len(edition_num) > 1:
+                if edition_num[-2] == "1":
+                    edition_num += "th"
+                else:
+                    edition_num += "rd"
+            else:
+                edition_num += "rd"
+
         elif edition_num[-1] in th_list:
             edition_num += "th"
 

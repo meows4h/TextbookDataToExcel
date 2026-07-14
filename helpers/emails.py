@@ -30,6 +30,9 @@ class Instructor:
         self.data = {course: {section: [book]}}
 
     def add_book(self, course, section, book):
+        # if we have the course & section, add book to it
+        # if we have course, but not section, make new section with book
+        # if neither, make new course and section dictionary
         if course in self.data and section in self.data[course]:
             self.data[course][section].append(book)
         elif course in self.data:
@@ -70,6 +73,7 @@ def update_excel(directory, data, sheet_name):
 
 # TODO
 # rewrite this into smaller functions to break it apart a little
+# could easily be much more functionized, making it easier to work with
 def create_email_excel(input_sheet=None, file_name=""):
     """Creates an excel sheet to be formatted for usage with PowerAutomate function."""
     full_config = configparser.ConfigParser()
@@ -267,7 +271,8 @@ def create_email_excel(input_sheet=None, file_name=""):
             #                 course[1]}</a>.<br><ul>'
 
             # TODO
-            # combining class codes ?
+            # combining class codes or just restructuring this whole thing to make it
+            # cleaner and easier to work with in the future
 
             # book_dict = {book_str1: [section1, section2],
             #                book_str2: [section1], etc.}

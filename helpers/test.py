@@ -602,33 +602,65 @@ class ClassesTest(unittest.TestCase):
 class EmailsTest(unittest.TestCase):
     """Testing the emails.py file."""
     def setUp(self):
-        book_title = ""
-        book_author = ""
-        book_edition = ""
-        book_year = ""
-        book_access = {}
+        book_title = "Book Title"
+        book_author = "Book Author"
+        book_edition = "Book Edition"
+        book_year = "Book Year"
+        book_access = {
+            "Ebook": {
+                "Number": 1,
+                "Link": "ebook cdl link",
+                "CDL": True
+            },
+            "Print1": {
+                "Number": 2,
+                "Link": "print 1 link"
+            },
+            "Print2": {
+                "Number": 4,
+                "Link": "print 2 link"
+            },
+            "Audio": {
+                "Link": "audio link"
+            }
+        }
         self.emails_book = emails.Book(book_title, book_author, book_edition, book_year, book_access)
 
-        inst_name = ""
-        inst_email = ""
-        inst_course = ""
-        inst_section = ""
+        inst_name = "Instructor Name"
+        inst_email = "Instructor Email"
+        inst_course = "Course 1"
+        inst_section = "101"
         self.emails_instructor = emails.Instructor(inst_name, inst_email, inst_course, inst_section, self.emails_book)
 
     # Instructor Class testing
 
     # add_book method
     def test_add_book(self):
-        title = ""
-        author = ""
-        edition = ""
-        year = ""
-        access = {}
+        title = "Book 2"
+        author = "Author 2"
+        edition = "Edition 2"
+        year = "Year 2"
+        access = {"Ebook": {
+                "Number": 7,
+                "Link": "ebook link",
+                "CDL": False
+                }}
         local_book = emails.Book(title, author, edition, year, access)
 
-        course = ""
-        section = ""
-        self.emails_instructor.add_book(course, section, local_book)
+        case_courses = ["Course 1", "Course 1", "Course 2"]
+        case_sections = ["101", "102", "101"]
+        for idx, course in enumerate(case_courses):
+            self.emails_instructor.add_book(course, case_sections[idx], local_book)
+                    
+        self.assertEqual(2, len(self.emails_instructor.data))
+        self.assertEqual(2, len(self.emails_instructor.data["Course 1"]))
+        self.assertEqual(2, len(self.emails_instructor.data["Course 1"]["101"]))
+        self.assertEqual(1, len(self.emails_instructor.data["Course 1"]["102"]))
+        self.assertEqual(1, len(self.emails_instructor.data["Course 2"]))
+        self.assertEqual(1, len(self.emails_instructor.data["Course 2"]["101"]))
+
+        # could add in more tests beyond just the length checking but the data issues would
+        # be apparent when generating emails as well
         
 
     # End Instructor Class testing
@@ -888,96 +920,76 @@ class UtilTest(unittest.TestCase):
 
     # get_filepath testing
     def test_get_filepath(self):
-        cases = []
-        expected = []
+        cases = ["testing"]
+        expected = [get_directory(["..", "testing"])]
+        false_expected = [get_directory(["testing"])]
         for idx, case in enumerate(cases):
-            result = util
+            result = util.get_filepath(case)
+            false_result = util.get_filepath(case, home=False)
             self.assertEqual(expected[idx], result)
+            self.assertEqual(false_expected[idx], false_result)
 
     # get_letter testing
     def test_get_letter(self):
-        cases = []
-        expected = []
+        cases = [1, 27, 4, 53, 55]
+        expected = ["A", "AA", "D", "BA", "BC"]
         for idx, case in enumerate(cases):
-            result = util
+            result = util.get_letter(case)
             self.assertEqual(expected[idx], result)
 
     # get_edition_string testing
     def test_get_edition_string(self):
-        cases = []
-        expected = []
+        cases = [None, "", "5", 29, 10, "1", 11, 21, 22, 13]
+        expected = [None, None, "5th", "29th", "10th", "1st", "11th", "21st", "22nd", "13th"]
         for idx, case in enumerate(cases):
-            result = util
+            result = util.get_edition_string(case)
             self.assertEqual(expected[idx], result)
 
-    # get_format_headers testing
-    def test_get_format_headers(self):
-        cases = []
-        expected = []
-        for idx, case in enumerate(cases):
-            result = util
-            self.assertEqual(expected[idx], result)
+    # get_format_headers just grabs a set of information
+    # as it is supposed to be the central point of modification for those strings
 
     # get_replace_header testing
     def test_get_replace_header(self):
-        cases = []
-        expected = []
+        format_headers = util.get_format_headers()
+        cases = [["TestNum", "TestSection", "TestEmailInfo"]]
         for idx, case in enumerate(cases):
-            result = util
-            self.assertEqual(expected[idx], result)
+            result = util.get_replace_header(format_headers[2], case[0], case[1], case[2])
+            for val in case:
+                self.assertIn(val, result)
 
     # get_split_course testing
     def test_get_split_course(self):
-        cases = []
-        expected = []
+        cases = ["MTH251", "BIO305", "WR221Z"]
+        expected = [["MTH", "251"], ["BIO", "305"], ["WR", "221Z"]]
         for idx, case in enumerate(cases):
-            result = util
+            result = util.get_split_course(case)
             self.assertEqual(expected[idx], result)
 
     # skipping get_input and get_enabled as it is an input oriented function
 
-    # get_sheet_headers testing
-    def test_get_sheet_headers(self):
-        cases = []
-        expected = []
-        for idx, case in enumerate(cases):
-            result = util
-            self.assertEqual(expected[idx], result)
-
-    # get_config_headers testing
-    def test_get_config_headers(self):
-        cases = []
-        expected = []
-        for idx, case in enumerate(cases):
-            result = util
-            self.assertEqual(expected[idx], result)
-
-    # get_string_cleaners testing
-    def test_get_string_cleaners(self):
-        cases = []
-        expected = []
-        for idx, case in enumerate(cases):
-            result = util
-            self.assertEqual(expected[idx], result)
+    # get_sheet_headers, get_config_headers, and get_string_cleaners 
+    # are all also is information grabbing functions
 
     # get_row_info testing
     def test_get_row_info(self):
-        cases = []
-        expected = []
-        for idx, case in enumerate(cases):
-            result = util
-            self.assertEqual(expected[idx], result)
+        # an implementation can be made for row data to be tested, but there is
+        # only one spot this gets used in, so it is not relevant to time to get done
+        pass
 
     # get_campus testing
     def test_get_campus(self):
-        cases = []
-        expected = []
+        # this is breakable via any string starting with D and then
+        # filling the rest with non-existent values, but this usually does
+        # not occur in the natural data this script will be managing
+        cases = ["C", "D", "Z", "L", "N", "B", "H", "PDX", "DC", "23432", "CR"]
+        expected = ["Corvallis", "Ecampus", "International", "LaGrande", "Newport", "Cascades", "Portland", "Portland", "Ecampus", None, None]
         for idx, case in enumerate(cases):
-            result = util
+            result = util.get_campus(case)
             self.assertEqual(expected[idx], result)
 
     # skipping set_col_format as it is likely to fluctuate and change
 
+# some helper functions to carry out testing various features
 
 def get_directory(folder_list):
     curr_dir = os.path.dirname(__file__)

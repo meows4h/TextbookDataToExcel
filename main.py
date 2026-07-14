@@ -5,14 +5,9 @@ from helpers.modes import start_mode
 from helpers.gui import start_app
 from helpers.sheetmaker import make_excel_sheet
 
-# General TODO:
-# finish isbn updating from the bookstore (i.e. isbn differs from what we own)
-# fully finish documentation.md
-# add images to readme
-
 # TODO
 # This is a list of improvements that I am aware may be able to be added
-# However, due to time constraints or lack of information are left as is
+# However, due to time constraints or lack of information are left for later
 
 # - try / except blocks around data entry code
 #     things like analytics.py could use more error checking to prevent
@@ -32,6 +27,12 @@ from helpers.sheetmaker import make_excel_sheet
 #     what COULD be done or what hasn't been fully tested
 # - adding testcases for selenium functions using hidden github values
 #     could still login using headless functionality and secret key values
+# - adding in cost comparison that works without querying the site too many times
+# - improving documentation, comments, and overall code structure
+# - cross referencing our own ISBN values from the bookstore ISBN values
+#     sometimes we own a different book than what the bookstore has per class
+#     but it is the same book, in which case this could use an automatic cross
+#     referencing function to automatically pull those values via titles
 
 config = configparser.ConfigParser()
 config.read("config.ini")

@@ -125,6 +125,8 @@ def get_prices(driver, table):
                 main_div = material_dict[isbn]
                 main_div.click()
                 # TODO
+                # this has been partially implemented but it cannot handle the number of
+                # requests this script would like to make, check other TODO or documentation
                 # this needs to pull the used and new price points from the beaverstore page
                 # https://osubeaverstore.verbacompare.com/comparison?id=2026-Summer__AEC__411__400
                 html = main_div.get_attribute("innerHTML")
